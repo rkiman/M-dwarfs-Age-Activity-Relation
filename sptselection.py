@@ -115,6 +115,28 @@ def organize_spt(spt_sample):
         #print(x)
         if(str(x)=='G/K '):
             spt_sample_good.append(np.nan)
+        elif(str(x)=='sdK7.'):
+            spt_sample_good.append(np.nan)
+        elif(str(x)=='sdK5.'):
+            spt_sample_good.append(np.nan)
+        elif(str(x)=='esdK5'):
+            spt_sample_good.append(np.nan)
+        elif(str(x)=='usdK5'):
+            spt_sample_good.append(np.nan)
+        elif(str(x)=='sdM3.'):
+            spt_sample_good.append(np.nan)
+        elif(str(x)=='sdM1.'):
+            spt_sample_good.append(np.nan)
+        elif(str(x)=='usdK?'):
+            spt_sample_good.append(np.nan)
+        elif(str(x)=='esdK?'):
+            spt_sample_good.append(np.nan)
+        elif(str(x)=='sdM2.'):
+            spt_sample_good.append(np.nan)
+        elif(str(x)=='sdM4.'):
+            spt_sample_good.append(np.nan)
+        elif(str(x)=='sdM0.'):
+            spt_sample_good.append(np.nan)
         elif(str(x)=='M0   2'):
             spt_sample_good.append(0)
         elif(str(x)=='M8 J  '):
