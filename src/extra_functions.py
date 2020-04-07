@@ -10,6 +10,7 @@ from astropy.table import Table
 import numpy as np
 
 
+
 def calc_lhalbol(ewha,ewha_error,g_rp):
     chi_douglas2014 = np.array([6.6453, 6.0334, 5.2658, 4.4872, 3.5926, 
                                 2.4768, 1.7363, 1.2057, 0.6122, 0.3522])*1e-5
