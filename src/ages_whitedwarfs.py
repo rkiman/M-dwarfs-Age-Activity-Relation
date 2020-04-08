@@ -3,7 +3,6 @@
 
 from astropy.table import Table
 import numpy as np
-import matplotlib.pyplot as plt
 import sys
 sys.path.append('/Users/rociokiman/Documents')
 import wdwarfdate 
