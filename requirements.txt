@@ -1,6 +1,5 @@
 
 numpy
-pkg_resources
 astropy
 scipy
 
