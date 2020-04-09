@@ -2,6 +2,6 @@
 numpy
 astropy
 scipy
-git+git://github.com/rkiman/wdwarfdate@master
+git+git://github.com/rkiman/wdwarfdate@master#egg=wdwarfdate
 
 
