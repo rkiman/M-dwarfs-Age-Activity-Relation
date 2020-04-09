@@ -5,7 +5,7 @@ from astropy.table import Table
 import numpy as np
 import pkg_resources
 from scipy.io.idl import readsav
-from src.activity_lifetime import confirm_active_m_dwarfs
+
 
 def text_confirm_active_m_dwarfs():
     path = '../Catalogs/Sources/Douglas2014_praesepe_gaia.csv'
