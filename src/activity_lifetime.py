@@ -10,6 +10,7 @@ from .astro import WISE_id_to_ra_dec
 import sys
 sys.path.append('/Users/rociokiman/Documents/Gaia-Cupid/ActivityAgeRelation/banyan_sigma')
 from banyan_sigma import banyan_sigma
+from scipy.io.idl import readsav
 
 
 def str_to_float(array):
@@ -83,31 +84,53 @@ def confirm_active_m_dwarfs(cluster=''):
 
         N = len(ra)
 
-    mask_run_banyan = (~np.isnan(ra+dec+pmra+pmra_error+pmdec+pmdec_error+parallax
-                             +parallax_error)
-                      * (parallax/parallax_error > 8))
+        mask_run_banyan = (~np.isnan(ra+dec+pmra+pmra_error+pmdec+pmdec_error+
+                                     parallax+parallax_error)
+                          * (parallax/parallax_error > 8))
+            
+        result = banyan_sigma(ra=ra[mask_run_banyan], dec=dec[mask_run_banyan],
+                              pmra=pmra[mask_run_banyan],
+                              pmdec=pmdec[mask_run_banyan], 
+                              epmra=pmra_error[mask_run_banyan],
+                              epmdec=pmdec_error[mask_run_banyan],
+                              plx=parallax[mask_run_banyan],
+                              eplx=parallax_error[mask_run_banyan])
+    
+        prob_ya = np.array(result['YA_PROB']).reshape(len(result['YA_PROB']),)
+        best_ya = np.array(result['BEST_YA']).reshape(len(result['BEST_YA']),)
         
-    result = banyan_sigma(ra=ra[mask_run_banyan], dec=dec[mask_run_banyan],
-                          pmra=pmra[mask_run_banyan],
-                          pmdec=pmdec[mask_run_banyan], 
-                          epmra=pmra_error[mask_run_banyan],
-                          epmdec=pmdec_error[mask_run_banyan],
-                          plx=parallax[mask_run_banyan],
-                          eplx=parallax_error[mask_run_banyan])
-
-    prob_ya = np.array(result['YA_PROB']).reshape(len(result['YA_PROB']),)
-    best_ya = np.array(result['BEST_YA']).reshape(len(result['BEST_YA']),)
+        prob_mg_mem = np.ones(N)*np.nan
+        best_ya_mem = np.array(['none' for x in range(N)])
+        
+        prob_mg_mem[mask_run_banyan] = prob_ya
+        best_ya_mem[mask_run_banyan] = best_ya
+        
+        douglas2014['prob_ya'] = prob_mg_mem
+        douglas2014['best_ya'] = best_ya_mem
+        
+        return douglas2014
     
-    prob_mg_mem = np.ones(N)*np.nan
-    best_ya_mem = np.array(['none' for x in range(N)])
-    
-    prob_mg_mem[mask_run_banyan] = prob_ya
-    best_ya_mem[mask_run_banyan] = best_ya
-    
-    douglas2014['prob_ya'] = prob_mg_mem
-    douglas2014['best_ya'] = best_ya_mem
-    
-    return douglas2014
+    if(cluster=='PRA'):
+        path = '../Catalogs/Sources/Douglas2014_praesepe_gaia.csv'
+        filepath = pkg_resources.resource_filename(__name__, path)
+        douglas2014 = Table.read(filepath)
+        
+        #Jonathan Gagne run Banyan on this sample for me and here are the
+        #results
+        path = '../Catalogs/praesepe_sample_banyan_sigma.sav'
+        filepath = pkg_resources.resource_filename(__name__, path)
+        
+        #extracting best young asociationg and probability of being member
+        results = readsav(filepath,verbose=1)
+        best_ya_bytes = results['out']['best_ya']
+        best_ya = np.array([x.decode("utf-8") for x in best_ya_bytes])
+        ya_prob = results['out']['YA_PROB']
+        
+        douglas2014['best_ya'] = best_ya
+        douglas2014['ya_prob'] = ya_prob
+        
+        return douglas2014
+        
     
 def confirm_active_m_dwarfs1(cluster=''):
     
