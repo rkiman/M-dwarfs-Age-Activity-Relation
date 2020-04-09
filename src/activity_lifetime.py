@@ -6,7 +6,7 @@ import numpy as np
 import pkg_resources
 from astropy.coordinates import SkyCoord
 from astropy import units as u
-from .astro import WISE_id_to_ra_dec
+#from .astro import WISE_id_to_ra_dec
 import sys
 sys.path.append('/Users/rociokiman/Documents/Gaia-Cupid/ActivityAgeRelation/banyan_sigma')
 from banyan_sigma import banyan_sigma
