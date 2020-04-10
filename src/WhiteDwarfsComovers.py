@@ -5,7 +5,6 @@ from astropy.table import Table
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 import numpy as np
-import pkg_resources
 
 def cross_match_to_white_dwarfs(m_dwarfs):
     '''
@@ -14,18 +13,18 @@ def cross_match_to_white_dwarfs(m_dwarfs):
     Gentile Fusillo, N. Pietro et al. MNRAS, 482, 4570–4591 (2019).
     Return the cross-matched samples.
     '''
-    
-    path = '../Catalogs/wd_sources/gaiawd.fit'
-    filepath = pkg_resources.resource_filename(__name__, path)
-    
-    #Load white dwarfs catalog
-    w_dwarfs = Table.read(filepath)
-    
+
+    url="ftp://cdsarc.u-strasbg.fr/pub/cats/J/MNRAS/482/4570/gaia2wd.dat.gz" 
+        
+    w_dwarfs = Table.read(url, readme="data/ReadMe", 
+                          format="ascii.cds")
+
     #Define the two catalogs in astropy SkyCoord format with ra and dec
+    w_dwarfs_radec = SkyCoord(ra=np.array(w_dwarfs['RAdeg'])*u.degree, 
+                               dec=np.array(w_dwarfs['DEdeg'])*u.degree)
+    
     m_dwarfs_radec = SkyCoord(ra=np.array(m_dwarfs['ra'])*u.degree, 
-                               dec=np.array(m_dwarfs['dec'])*u.degree)
-    w_dwarfs_radec = SkyCoord(ra=np.array(w_dwarfs['RA_ICRS'])*u.degree, 
-                               dec=np.array(w_dwarfs['DE_ICRS'])*u.degree)
+                              dec=np.array(m_dwarfs['dec'])*u.degree)
     
     #Cross-match the two samples with a 10arcmin radius
     idx_md, idx_wd, d2d,_ = w_dwarfs_radec.search_around_sky(m_dwarfs_radec, 
@@ -91,10 +90,9 @@ def calc_pca(params_m_0, params_wd_0, pwd, f_pwd, limits):
     '''
         
     #Load white dwarfs catalog
-    path = '../Catalogs/wd_sources/gaiawd.fit'
-    filepath = pkg_resources.resource_filename(__name__, path)
-
-    w_dwarfs = Table.read(filepath)
+    url="ftp://cdsarc.u-strasbg.fr/pub/cats/J/MNRAS/482/4570/gaia2wd.dat.gz" 
+        
+    w_dwarfs = Table.read(url, readme="data/ReadMe", format="ascii.cds")
     
     Ntot_wd = len(pwd)
     N = 100 #Number of repetition for the probability

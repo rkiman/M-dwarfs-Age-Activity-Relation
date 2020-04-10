@@ -7,3 +7,4 @@ from .ages_whitedwarfs import *
 from .sptselection import *
 from .activity_lifetime import *
 from .astro import *
+from .activity_fraction import *

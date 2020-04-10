@@ -135,7 +135,7 @@ def confirm_active_m_dwarfs(cluster=''):
 def confirm_active_m_dwarfs1(cluster=''):
     
     if(cluster=='HYA'):
-        path = '../Catalogs/Sources/Douglas2014yades.fit'
+        path = '../Catalogs/Sources/Douglas2014_hyades.fit'
         filepath = pkg_resources.resource_filename(__name__, path)
         
         table_hya = Table.read(filepath)
