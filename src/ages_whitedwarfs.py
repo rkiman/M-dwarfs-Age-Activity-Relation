@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+from astropy.table import Table
 import sys
-sys.path.append('/Users/rociokiman/Documents')
+sys.path.append('/Users/rociokiman/Documents/wdwarfdate')
 import wdwarfdate 
 
 def calc_ages_wdm_binaries(wd_table):
@@ -30,32 +31,12 @@ def calc_ages_wdm_binaries(wd_table):
                                                      datatype = 'Gyr',
                                                      path = 'results/')
         results[i,:] = results_i
-        
-    table_name = 'Catalogs/wdm_binaries.fits'
 
-
-    wd_table['ms_age_median'] = results[:,0]
-    wd_table['ms_age_err_low'] = results[:,1]
-    wd_table['ms_age_err_high'] = results[:,2]
-    wd_table['cooling_age_median'] = results[:,3]
-    wd_table['cooling_age_err_low'] = results[:,4]
-    wd_table['cooling_age_err_high'] = results[:,5]
-    wd_table['total_age_median'] = results[:,6]
-    wd_table['total_age_err_low'] = results[:,7]
-    wd_table['total_age_err_high'] = results[:,8]
-    wd_table['initial_mass_median'] = results[:,9]
-    wd_table['initial_mass_err_low'] = results[:,10]
-    wd_table['initial_mass_err_high'] = results[:,11]
-    wd_table['final_mass_median'] = results[:,12]
-    wd_table['final_mass_err_low'] = results[:,13]
-    wd_table['final_mass_err_high'] = results[:,14]
-
-    #Save results to plot in notebook
-    wd_table.write(table_name, format='fits', overwrite=True)
     
     return results
 
 
-#wd_table = Table.read('../Catalogs/wdm_binaries.fits')
+#wd_table = Table.read('../Catalogs/old/wdm_binaries.fits')
 
+#print(wdwarfdate.__file__)
 #calc_ages_wdm_binaries(wd_table)

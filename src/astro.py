@@ -131,7 +131,8 @@ def organize_table_format(columns):
               'phot_g_mean_mag', 'phot_rp_mean_flux', 
               'phot_rp_mean_flux_error', 'phot_rp_mean_mag', 
               'phot_bp_mean_flux', 'phot_bp_mean_flux_error', 
-              'phot_bp_mean_mag', 'ewha', 'ewha_error', 'ewha_all', 
+              'phot_bp_mean_mag', 'g_corr', 'rp_corr', 'ewha', 
+              'ewha_error', 'ewha_all', 
               'ewha_error_all', 'lhalbol', 'lhalbol_error', 'age', 
               'age_error_low', 'age_error_high', 'group_num', 'group_name',
               'source_num', 'source_ref']
@@ -142,3 +143,21 @@ def organize_table_format(columns):
         organized_table[labels[i]] = np.array(columns[i])
 
     return organized_table
+
+
+def add_corrected_magnitudes(catalog):
+    deredden = Table.read('Catalogs/rocio_deredden.fits')
+    N = len(catalog['source_id'])
+    g_corr = np.ones(N)*np.nan
+    rp_corr = np.ones(N)*np.nan
+    
+    for i in range(N):
+        mask = catalog['source_id'][i] == deredden['SOURCE_ID']
+        if(len(deredden['G_CORR'][mask])!=0):
+            g_corr[i] = deredden['G_CORR'][mask][0]
+            rp_corr[i] = deredden['GRP_CORR'][mask][0]
+    
+    catalog['g_corr'] = g_corr
+    catalog['rp_corr'] = rp_corr
+    
+    return catalog

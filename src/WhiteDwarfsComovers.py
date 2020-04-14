@@ -5,6 +5,139 @@ from astropy.table import Table
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 import numpy as np
+import os
+from .ages_whitedwarfs import calc_ages_wdm_binaries
+from .astro import organize_table_format
+
+def compile_m_wd_sample(m_dwarfs_not_mg):
+    #Cross-mach m-dwarf sample with white dwarf sample to find all the pairs in
+    #a 10 arcmin radius
+    m_dwarfs_pairs,w_dwarfs_pairs,_ = cross_match_to_white_dwarfs(m_dwarfs_not_mg)
+    
+    #Make space removing tables that are not used anymore
+    del m_dwarfs_not_mg
+    
+    #Define the parameters of the m-white dwarfs pairs
+    params_m = [np.array(m_dwarfs_pairs['parallax']), 
+                np.array(m_dwarfs_pairs['parallax_error']),
+                np.array(m_dwarfs_pairs['pmra']), 
+                np.array(m_dwarfs_pairs['pmra_error']),
+                np.array(m_dwarfs_pairs['pmdec']), 
+                np.array(m_dwarfs_pairs['pmdec_error'])]
+    
+    params_wd = [np.array(w_dwarfs_pairs['Plx']), 
+                 np.array(w_dwarfs_pairs['e_Plx']),
+                 np.array(w_dwarfs_pairs['pmRA']), 
+                 np.array(w_dwarfs_pairs['e_pmRA']),
+                 np.array(w_dwarfs_pairs['pmDE']), 
+                 np.array(w_dwarfs_pairs['e_pmDE'])]
+    
+    #Define limits to decide what is a co-mover:
+    limits = [8, #parallax snr cut for m dwarfs
+              4, #parallax snr cut for white dwarfs
+              3, #sigma difference for pmra and pmdec
+              3] #sigma difference for parallax
+    
+    #Select co-movers with a mask from the pairs
+    mask_comovers_all = get_mask_binaries(limits,params_m,params_wd,
+                                          w_dwarfs_pairs['Pwd'],
+                                          w_dwarfs_pairs['f_Pwd'])
+    
+    #Calculate probability of chance alignment for each pair
+    prob_chance_align = calc_pca(params_m, params_wd,
+                                 w_dwarfs_pairs['Pwd'], 
+                                 w_dwarfs_pairs['f_Pwd'],
+                                 limits)
+    
+    #Final mask for pairs includes selected co-movers which have a low 
+    #probability of chance alignment
+    mask_comovers = mask_comovers_all * (prob_chance_align <= 0.01)
+    
+    info = 'Number of m-dwarfs white dwarfs pairs: {}'
+    N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers_all])
+    print(info.format(N))
+    info = 'Number of m-dwarfs with prob of chance alignment > 0.01: {}'
+    mask_info = mask_comovers_all * (prob_chance_align > 0.01)
+    N = len(np.array(m_dwarfs_pairs['parallax'])[mask_info])
+    print(info.format(N))
+    info = 'Number of m-dwarfs white dwarfs pairs with prob ' \
+           'of chance alignment <= 0.01: {}'
+    N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers])
+    print(info.format(N))
+    
+    #Remove nans to calculate ages in the next step.
+    mask_nan_teff_logg = ~np.isnan(w_dwarfs_pairs['TeffH']+
+                                   w_dwarfs_pairs['loggH'])
+    
+    info = 'Number of m-dwarfs white dwarfs pairs I will calculate age for: {}'
+    N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers*mask_nan_teff_logg])
+    print(info.format(N))
+    
+    #Define the new sample of m-dwarfs that have a white dwarf co-moving
+    m_co_movers = m_dwarfs_pairs[mask_comovers*mask_nan_teff_logg]
+    w_co_movers = w_dwarfs_pairs[mask_comovers*mask_nan_teff_logg]
+    
+    if(os.path.exists('Catalogs/wdm_binaries.fits')):
+        w_co_movers1 = Table.read('Catalogs/wdm_binaries.fits')
+        test_wd_table(w_co_movers,w_co_movers1)
+        w_co_movers = w_co_movers1
+    else:
+        #Calculate total age, cooling age, main sequence age, initial mass 
+        #and final mass for the white dwarfs
+        result_w_ages = calc_ages_wdm_binaries(w_co_movers)
+
+        w_co_movers['ms_age_median'] = result_w_ages[:,0]
+        w_co_movers['ms_age_err_low'] = result_w_ages[:,1]
+        w_co_movers['ms_age_err_high'] = result_w_ages[:,2]
+        w_co_movers['cooling_age_median'] = result_w_ages[:,3]
+        w_co_movers['cooling_age_err_low'] = result_w_ages[:,4]
+        w_co_movers['cooling_age_err_high'] = result_w_ages[:,5]
+        w_co_movers['total_age_median'] = result_w_ages[:,6]
+        w_co_movers['total_age_err_low'] = result_w_ages[:,7]
+        w_co_movers['total_age_err_high'] = result_w_ages[:,8]
+        w_co_movers['initial_mass_median'] = result_w_ages[:,9]
+        w_co_movers['initial_mass_err_low'] = result_w_ages[:,10]
+        w_co_movers['initial_mass_err_high'] = result_w_ages[:,11]
+        w_co_movers['final_mass_median'] = result_w_ages[:,12]
+        w_co_movers['final_mass_err_low'] = result_w_ages[:,13]
+        w_co_movers['final_mass_err_high'] = result_w_ages[:,14]
+    
+        w_co_movers.write('Catalogs/wdm_binaries.fits', format = 'fits', 
+                          overwrite = True)
+        
+    #Organize table format for future steps
+    N_final = len(m_co_movers)
+    
+    columns = [m_co_movers['ra'], m_co_movers['dec'], m_co_movers['source_id'],
+               m_co_movers['ra_x'], m_co_movers['dec_x'], m_co_movers['pmra'], 
+               m_co_movers['pmra_error'], m_co_movers['pmdec'],
+               m_co_movers['pmdec_error'], m_co_movers['parallax'],
+               m_co_movers['parallax_error'], m_co_movers['phot_g_mean_flux'],
+               m_co_movers['phot_g_mean_flux_error'], 
+               m_co_movers['phot_g_mean_mag'],m_co_movers['phot_rp_mean_flux'],
+               m_co_movers['phot_rp_mean_flux_error'], 
+               m_co_movers['phot_rp_mean_mag'],m_co_movers['phot_bp_mean_flux'],
+               m_co_movers['phot_bp_mean_flux_error'], 
+               m_co_movers['phot_bp_mean_mag'], m_co_movers['g_corr'],
+               m_co_movers['rp_corr'], m_co_movers['ewha'], 
+               m_co_movers['ewha_error'], m_co_movers['ewha_all'], 
+               m_co_movers['ewha_error_all'], m_co_movers['lhalbol'],
+               m_co_movers['lhalbol_error'], w_co_movers['total_age_median'],
+               w_co_movers['total_age_err_low'], 
+               w_co_movers['total_age_err_high'],
+               np.zeros(N_final), np.array(['WD' for i in range(N_final)]),
+               m_co_movers['source_num'], m_co_movers['source_ref']]
+
+    m_co_movers_organized = organize_table_format(columns)
+    
+    return m_co_movers_organized
+
+def test_wd_table(table,table1):
+    assert len(table) == len(table1)
+    for x in range(10):
+        i = int(np.random.uniform(0,len(table)))
+        assert table['RA_ICRS'][i] == table1['RA_ICRS'][i]
+        assert table['DE_ICRS'][i] == table1['DE_ICRS'][i]
 
 def cross_match_to_white_dwarfs(m_dwarfs):
     '''
@@ -14,14 +147,19 @@ def cross_match_to_white_dwarfs(m_dwarfs):
     Return the cross-matched samples.
     '''
 
-    url="ftp://cdsarc.u-strasbg.fr/pub/cats/J/MNRAS/482/4570/gaia2wd.dat.gz" 
-        
-    w_dwarfs = Table.read(url, readme="data/ReadMe", 
-                          format="ascii.cds")
+    if(os.path.exists('Catalogs/wd_sources/gaiawd.fit')):
+        w_dwarfs = Table.read('Catalogs/wd_sources/gaiawd.fit')
+        ra_wd = w_dwarfs['RA_ICRS']
+        dec_wd = w_dwarfs['DE_ICRS']
+    else:
+        url="ftp://cdsarc.u-strasbg.fr/pub/cats/J/MNRAS/482/4570/gaia2wd.dat.gz" 
+        w_dwarfs = Table.read(url, readme="data/ReadMe", format="ascii.cds")
+        ra_wd = w_dwarfs['RAdeg']
+        dec_wd = w_dwarfs['DEdeg']
 
     #Define the two catalogs in astropy SkyCoord format with ra and dec
-    w_dwarfs_radec = SkyCoord(ra=np.array(w_dwarfs['RAdeg'])*u.degree, 
-                               dec=np.array(w_dwarfs['DEdeg'])*u.degree)
+    w_dwarfs_radec = SkyCoord(ra=np.array(ra_wd)*u.degree, 
+                               dec=np.array(dec_wd)*u.degree)
     
     m_dwarfs_radec = SkyCoord(ra=np.array(m_dwarfs['ra'])*u.degree, 
                               dec=np.array(m_dwarfs['dec'])*u.degree)
@@ -89,13 +227,14 @@ def calc_pca(params_m_0, params_wd_0, pwd, f_pwd, limits):
     Positions of both m and white dwarfs remain unchanged. 
     '''
         
-    #Load white dwarfs catalog
-    url="ftp://cdsarc.u-strasbg.fr/pub/cats/J/MNRAS/482/4570/gaia2wd.dat.gz" 
-        
-    w_dwarfs = Table.read(url, readme="data/ReadMe", format="ascii.cds")
+    if(os.path.exists('Catalogs/wd_sources/gaiawd.fit')):
+        w_dwarfs = Table.read('Catalogs/wd_sources/gaiawd.fit')
+    else:
+        url="ftp://cdsarc.u-strasbg.fr/pub/cats/J/MNRAS/482/4570/gaia2wd.dat.gz" 
+        w_dwarfs = Table.read(url, readme="data/ReadMe", format="ascii.cds")
     
     Ntot_wd = len(pwd)
-    N = 100 #Number of repetition for the probability
+    N = 1000 #Number of repetition for the probability
     prob = np.zeros(Ntot_wd)
      
     #Set parameters of the white dwarfs original pairs
