@@ -6,7 +6,7 @@ from astropy.table import Table
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 
-def select_compatible_measurements(literature_search,order):
+def select_compatible_measurements(literature_search,max_order):
     '''
     Select the catalogs which are first and second order compatible with
     Kiman et al. 2019. from the literature search sample.
@@ -23,6 +23,7 @@ def select_compatible_measurements(literature_search,order):
     
     #Identify repeated stars
     same_star = find_repeated_stars(ra,dec)
+    literature_search['same_star'] = same_star
     
     #Identify repeated measurements
     mask_idx_to_remove = remove_repeated_measurements(ewha,ewha_err,same_star)
@@ -32,12 +33,13 @@ def select_compatible_measurements(literature_search,order):
     idx_kiman = source_ref_table['source_num'][mask_kiman][0]
     
     res = find_compatible_catalogs(idx_kiman,source_num_ref,same_star,
-                                   source_num,ewha,order)
+                                   source_num,ewha,max_order)
     compatible,prob,total_comp,order = res
     
     #Using the list of compatible catalogs make a mask of compatible stars
     #and define the final sample of compatible stars.
-    mask_compatible = np.array([x in compatible for x in source_num])
+    mask_compatible = np.array([x in compatible for x 
+                                in source_num[~mask_idx_to_remove]])
     
     #Remove repeated measurements
     ls_compatible = literature_search[~mask_idx_to_remove]
@@ -47,6 +49,7 @@ def select_compatible_measurements(literature_search,order):
     ls_compatible['ewha_error_all'] = ls_compatible['ewha_error']
     ls_compatible['ewha'][~mask_compatible] = np.nan
     ls_compatible['ewha_error'][~mask_compatible] = np.nan
+
     
     ls_compatible.write('Catalogs/literature_search_gaia_compatible.fits',
                         format='fits')
@@ -111,10 +114,13 @@ def remove_repeated_measurements(ewha,ewha_err,same_star):
     return mask_idx_to_remove
 
 def find_compatible_catalogs(idx_kiman,source_num_ref,same_star,source_num,
-                             ewha,order):
+                             ewha,max_order):
     
     res = calc_compatible_matrix(source_num_ref,same_star,source_num,ewha)
     matrix_prob,matrix_prob_all,ewha_i,ewha_j = res
+    
+    #Save ewha to compare
+    
     
     N_ref = len(source_num_ref)
     
@@ -133,7 +139,7 @@ def find_compatible_catalogs(idx_kiman,source_num_ref,same_star,source_num,
                 total_comp.append(matrix_prob[i,idx_kiman])
                 order.append(1)
     
-    if(order==2):
+    if(max_order==2):
         #Second order compatible catalogs
         for i in compatible:
             for j in range(N_ref):
@@ -196,7 +202,7 @@ def calc_compatible_matrix(source_num_ref,same_star,source_num,ewha):
                         #then add a 1 to matrix_prob
                         matrix_prob_all[idx_i,idx_j]+=1
                         if(abs(ewha_mask[i]-ewha_mask[j])<3):
-                            matrix_prob[idx_i,idx_i]+=1
+                            matrix_prob[idx_i,idx_j]+=1
                     #Record the values of ewha for stars that are the same
                     #so they can be compared later. Add them only once (i<j).
                     if(idx_i<idx_j):

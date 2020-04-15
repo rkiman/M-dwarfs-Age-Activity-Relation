@@ -122,9 +122,10 @@ def compile_m_wd_sample(m_dwarfs_not_mg):
                m_co_movers['rp_corr'], m_co_movers['ewha'], 
                m_co_movers['ewha_error'], m_co_movers['ewha_all'], 
                m_co_movers['ewha_error_all'], m_co_movers['lhalbol'],
-               m_co_movers['lhalbol_error'], w_co_movers['total_age_median'],
-               w_co_movers['total_age_err_low'], 
-               w_co_movers['total_age_err_high'],
+               m_co_movers['lhalbol_error'], 
+               w_co_movers['total_age_median']*1e9,
+               w_co_movers['total_age_err_low']*1e9, 
+               w_co_movers['total_age_err_high']*1e9,
                np.zeros(N_final), np.array(['WD' for i in range(N_final)]),
                m_co_movers['source_num'], m_co_movers['source_ref']]
 

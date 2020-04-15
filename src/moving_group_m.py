@@ -48,7 +48,6 @@ def compile_m_moving_groups_sample(ls_compatible):
     rv = np.array([float(x) for x in ls_compatible['radial_velocity']])
     rv_error = np.array([float(x) for x in ls_compatible['radial_velocity_error']])
 
-    print('Number of compatible stars: {}'.format(len(ra)))
     
     #Define mask to run banyan correctly
     mask_run_banyan = (~np.isnan(ra+dec+pmra+pmra_error+pmdec+pmdec_error+
