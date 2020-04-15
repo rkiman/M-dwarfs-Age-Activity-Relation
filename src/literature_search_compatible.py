@@ -5,6 +5,7 @@ import numpy as np
 from astropy.table import Table
 from astropy.coordinates import SkyCoord
 import astropy.units as u
+from .make_tables import make_table_for_paper_sources
 
 def select_compatible_measurements(literature_search,max_order):
     '''
@@ -49,7 +50,10 @@ def select_compatible_measurements(literature_search,max_order):
     ls_compatible['ewha_error_all'] = ls_compatible['ewha_error']
     ls_compatible['ewha'][~mask_compatible] = np.nan
     ls_compatible['ewha_error'][~mask_compatible] = np.nan
-
+    
+    Ncomp = len(ls_compatible['ewha'][~np.isnan(ls_compatible['ewha'])])
+    make_table_for_paper_sources(ls_compatible['source_num'],Ncomp,
+                                 compatible,total_comp,order)
     
     ls_compatible.write('Catalogs/literature_search_gaia_compatible.fits',
                         format='fits')
