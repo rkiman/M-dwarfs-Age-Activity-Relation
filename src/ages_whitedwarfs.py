@@ -28,7 +28,7 @@ def calc_ages_wdm_binaries(wd_table):
                                                      low_perc = 16, 
                                                      plot = True, 
                                                      save_dist = True, 
-                                                     datatype = 'Gyr',
+                                                     datatype = 'yr',
                                                      path = 'results/')
         results[i,:] = results_i
 
