@@ -9,7 +9,8 @@ import os
 from .ages_whitedwarfs import calc_ages_wdm_binaries
 from .astro import organize_table_format
 
-def compile_m_wd_sample(m_dwarfs_not_mg):
+def compile_m_wd_sample(m_dwarfs_not_mg,
+                        file_name_binaries='wdm_binaries.fits'):
     #Cross-mach m-dwarf sample with white dwarf sample to find all the pairs in
     #a 10 arcmin radius
     m_dwarfs_pairs,w_dwarfs_pairs,_ = cross_match_to_white_dwarfs(m_dwarfs_not_mg)
@@ -77,8 +78,8 @@ def compile_m_wd_sample(m_dwarfs_not_mg):
     m_co_movers = m_dwarfs_pairs[mask_comovers*mask_nan_teff_logg]
     w_co_movers = w_dwarfs_pairs[mask_comovers*mask_nan_teff_logg]
     
-    if(os.path.exists('Catalogs/wdm_binaries.fits')):
-        w_co_movers1 = Table.read('Catalogs/wdm_binaries.fits')
+    if(os.path.exists('Catalogs/'+file_name_binaries)):
+        w_co_movers1 = Table.read('Catalogs/'+file_name_binaries)
         test_wd_table(w_co_movers,w_co_movers1)
         w_co_movers = w_co_movers1
     else:
@@ -101,8 +102,9 @@ def compile_m_wd_sample(m_dwarfs_not_mg):
         w_co_movers['final_mass_median'] = result_w_ages[:,12]
         w_co_movers['final_mass_err_low'] = result_w_ages[:,13]
         w_co_movers['final_mass_err_high'] = result_w_ages[:,14]
+        w_co_movers['m_source_id'] = m_co_movers['source_id']
     
-        w_co_movers.write('Catalogs/wdm_binaries.fits', format = 'fits', 
+        w_co_movers.write('Catalogs/'+file_name_binaries, format = 'fits', 
                           overwrite = True)
         
     #Organize table format for future steps
@@ -123,9 +125,9 @@ def compile_m_wd_sample(m_dwarfs_not_mg):
                m_co_movers['ewha_error'], m_co_movers['ewha_all'], 
                m_co_movers['ewha_error_all'], m_co_movers['lhalbol'],
                m_co_movers['lhalbol_error'], 
-               w_co_movers['total_age_median']*1e9,
-               w_co_movers['total_age_err_low']*1e9, 
-               w_co_movers['total_age_err_high']*1e9,
+               w_co_movers['total_age_median'],
+               w_co_movers['total_age_err_low'], 
+               w_co_movers['total_age_err_high'],
                np.zeros(N_final), np.array(['WD' for i in range(N_final)]),
                m_co_movers['source_num'], m_co_movers['source_ref']]
 
