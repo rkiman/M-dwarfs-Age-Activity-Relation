@@ -54,9 +54,8 @@ def compile_m_moving_groups_sample(ls_compatible):
     #Mask for high likelihood members accordin to banyan
     highprob = prob_ya > 0.9
     
-    #Get Praesepe members which is not included in banyan yet
-    
-    #Jonathan Gagne run Banyan on this sample for me and here are the
+    #Get Praesepe members which is not included in banyan yet.
+    #Jonathan Gagne run Banyan on this sample for me and here are the results
     path = 'Catalogs/rocio_praesepe_sample.sav'
     #extracting best young asociationg and probability of being member
     results = readsav(path,verbose=1)
@@ -65,6 +64,7 @@ def compile_m_moving_groups_sample(ls_compatible):
     ya_prob_pra = results['out']['YA_PROB']
     source_id_pra = results['input']['source_id'][ya_prob_pra>0.9]
     
+    #Mask for PRA members
     bf_pra = np.array([True if x in source_id_pra else False 
                        for x in ls_compatible['source_id']])
     

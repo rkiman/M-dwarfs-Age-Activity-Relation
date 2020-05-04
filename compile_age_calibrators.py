@@ -32,10 +32,15 @@ else:
     path = 'Catalogs/literature_search_gaia.fits'
     literature_search1 = Table.read(path)
     
-    #Remove haew nans and zeros from the sample. We don't want them!
+    #Remove haew nans, zeros and higher mass dwarfs from the sample. 
+    #We don't want them!
     mask_nan = ~np.isnan(np.array(literature_search1['ewha']))
     mask_zeros = np.array(literature_search1['ewha'])!=0
-    literature_search = literature_search1[mask_nan*mask_zeros]
+    g = literature_search1['phot_g_mean_mag']
+    rp = literature_search1['phot_rp_mean_mag']
+    mask_m_dwarf = g-rp > 0.8
+    
+    literature_search = literature_search1[mask_nan*mask_zeros*mask_m_dwarf]
     
     #Add extinction corrected magnitudes to the sample
     literature_search = src.add_corrected_magnitudes(literature_search)
@@ -55,15 +60,13 @@ m_dwarfs_mg,m_dwarfs_not_mg = src.compile_m_moving_groups_sample(ls_c_not_acc)
 m_dwarfs_wd = src.compile_m_wd_sample(m_dwarfs_not_mg)
 
 
-###--------- Final Age-calibrators sample ---------###
-
+#Make Final Age-calibrators sample
 #Combine results 
 age_calibrators = vstack([m_dwarfs_mg,m_dwarfs_wd])
 
 print('Total number of age calibrators: {}'.format(len(age_calibrators)))
 
-###--------- Calculate LHalphaLbol ---------###
-
+#Calculate LHalphaLbol
 lhalbol,lhalbol_error = src.calc_lhalbol(age_calibrators['ewha'],
                                          age_calibrators['ewha_error'],
                                          age_calibrators['g_corr']-
@@ -72,6 +75,7 @@ lhalbol,lhalbol_error = src.calc_lhalbol(age_calibrators['ewha'],
 age_calibrators['lhalbol'] = lhalbol
 age_calibrators['lhalbol_error'] = lhalbol_error
 
+#Save sample
 age_calibrators.write('Catalogs/age_calibrators_bayes.fits', overwrite=True)
 
 
