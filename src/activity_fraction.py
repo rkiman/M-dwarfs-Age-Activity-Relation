@@ -7,17 +7,6 @@ from scipy.io.idl import readsav
 import os
 from astropy.table import Table
 
-def define_inactive_limit(color,ewha):
-    mask_nan = ~np.isnan(color+ewha)* (ewha < 0.3)
-    color,ewha = color[mask_nan],ewha[mask_nan]
-    
-    p = np.polyfit(color,ewha,3)
-    mask = abs(np.polyval(p,color)-ewha) < 0.2
-    for i in range(9):
-        p = np.polyfit(color[mask],ewha[mask],8)
-        mask = abs(np.polyval(p,color)-ewha) < 0.2  
-    return p
-
 def find_binaries(color,abs_mag,group,cluster):
     mask_cluster = group == cluster
     p=np.nan
@@ -55,18 +44,60 @@ def find_binaries(color,abs_mag,group,cluster):
     '''
     return mask_binaries
 
-def calc_activity_fraction(color,ewha,abs_mag,group,cluster,color_range):
+def calc_activity_fraction(color,ewha,method_bin):
     #polynomial for inactive stars
-    p = np.array([-373.08951374,2531.16938349,-7252.86298719,11428.40584469,
-                  -10785.23563974,6209.01090379,-2121.21267524,398.27658421,
-                  -34.62116487])
+    p_inactive = np.array([395.50786613,-3045.0560077,9964.56950987,
+                           -18068.29454717,19816.23461458,
+                           -13428.70983305,5469.77129071,
+                           -1212.66808967,108.51204825])
+    
+    #define bins of colors 
+    _,color_range = np.histogram(color,bins=method_bin)
+    
+    #Define a mask for active and inactive stars
+    mask_inactive = abs(np.polyval(p_inactive,color)-ewha) < 0.75
+    mask_active = ewha - np.polyval(p_inactive,color) >= 0.75
     
     n_bin = len(color_range)-1
     
-    mask_inactive = abs(np.polyval(p,color)-ewha) < 1
-    mask_active = (~mask_inactive) * (np.polyval(p,color) < ewha)
+    #arrays to be filled out as I calculate the active fraction
+    color_bin = np.ones(n_bin)*np.nan
+    active_fraction = np.ones(n_bin)*np.nan
+    inactive_fraction = np.ones(n_bin)*np.nan
+    n_array = np.ones(n_bin)*np.nan
+
+    #calculation of the active fraction
+    for i in range(n_bin):
+        #select color range
+        mask_color = (color_range[i] < color) * (color < color_range[i+1])
+        n_tot = len(ewha[mask_color])
+        if(n_tot!=0):
+            active_fraction[i] = len(ewha[mask_color*mask_active])/n_tot
+            inactive_fraction[i] = len(ewha[mask_color*mask_inactive])/n_tot
+            color_bin[i] = np.nanmean(color[mask_color])
+            n_array[i] = n_tot
+
+    #calculate error of active fraction based on a binomial distribution
+    error_binomial = (active_fraction*(1-active_fraction))/n_array
+
+    return color_bin,active_fraction,np.sqrt(error_binomial),n_array
+
+'''
+def calc_activity_fraction(color,ewha,abs_mag,color_range,group=[],cluster='',
+                           find_binaries=False):
+    #polynomial for inactive stars
     
-    if(np.logical_or(cluster == 'mlsdss',cluster == 'PRA')):
+    p_inactive = np.array([395.50786613,-3045.0560077,9964.56950987,
+                           -18068.29454717,19816.23461458,
+                           -13428.70983305,5469.77129071,
+                           -1212.66808967,108.51204825])
+    
+    mask_inactive = abs(np.polyval(p_inactive,color)-ewha) < 0.75
+    mask_active = ewha - np.polyval(p_inactive,color) >= 0.75
+    
+    n_bin = len(color_range)-1
+    
+    if(find_binaries == False):
         color_bin = np.ones(n_bin)*np.nan
         active_fraction = np.ones(n_bin)*np.nan
         inactive_fraction = np.ones(n_bin)*np.nan
@@ -81,10 +112,9 @@ def calc_activity_fraction(color,ewha,abs_mag,group,cluster,color_range):
                 inactive_fraction[i] = len(ewha[mask_tot*mask_inactive])/n_tot
                 color_bin[i] = np.nanmean(color[mask_color])
                 n_array[i] = n_tot
-    else:
+                
+    elif(find_binaries == True):
         mask_binaries = find_binaries(color,abs_mag,group,cluster)
-
-        mask_cluster = group == cluster
 
         color_bin = np.ones(n_bin)*np.nan
         active_fraction = np.ones(n_bin)*np.nan
@@ -93,7 +123,7 @@ def calc_activity_fraction(color,ewha,abs_mag,group,cluster,color_range):
 
         for i in range(n_bin):
             mask_color = (color_range[i] < color) * (color < color_range[i+1])
-            mask_tot = mask_color*mask_cluster*(~mask_binaries)
+            mask_tot = mask_color*(~mask_binaries)
             n_tot = len(ewha[mask_tot])
             if(n_tot!=0):
                 active_fraction[i] = len(ewha[mask_tot*mask_active])/n_tot
@@ -102,3 +132,4 @@ def calc_activity_fraction(color,ewha,abs_mag,group,cluster,color_range):
                 n_array[i] = n_tot
 
     return color_bin,active_fraction,inactive_fraction, n_array
+'''

@@ -22,21 +22,6 @@ def compile_m_moving_groups_sample(ls_compatible):
     
     N = len(ls_compatible)
     
-    #Define mask to distiguis accreating stars according to the ewha
-    mask_acc = np.ones(N)*np.nan
-    g_rp = ls_compatible['phot_g_mean_mag']-ls_compatible['phot_rp_mean_mag']
-    ewha = ls_compatible['ewha_all']
-    mask_acc = []
-    for x,y in zip(g_rp,ewha):
-        mask_acc.append(def_mask_acc(x,y))
-    mask_acc = np.array(mask_acc)
-        
-    #If one of the measurements of the same star is accreating, all are. 
-    for i in range(1,int(max(ls_compatible['same_star']))+1):
-        mask_same_star = ls_compatible['same_star'] == i
-        if(any(mask_acc[mask_same_star]==False)):
-            mask_acc[mask_same_star]=False
-
     ra = np.array([float(x) for x in ls_compatible['ra_x']])
     dec = np.array([float(x) for x in ls_compatible['dec_x']])
     pmra = np.array([float(x) for x in ls_compatible['pmra']])
@@ -52,8 +37,7 @@ def compile_m_moving_groups_sample(ls_compatible):
     #Define mask to run banyan correctly
     mask_run_banyan = (~np.isnan(ra+dec+pmra+pmra_error+pmdec+pmdec_error+
                                  parallax+parallax_error)
-                       * (parallax/parallax_error > 8)
-                       * mask_acc)
+                       * (parallax/parallax_error > 8))
     #Run banyan
     result = banyan_sigma(ra=ra[mask_run_banyan],dec=dec[mask_run_banyan], 
                           pmra=pmra[mask_run_banyan],
@@ -158,26 +142,3 @@ def compile_m_moving_groups_sample(ls_compatible):
 def remove(string): 
     return string.replace(" ", "")
 
-def spt_to_g_rp(spt):
-    """
-    Relation from Kiman et al. 2019
-    """
-    return -0.0036*spt**2 + 0.11*spt + 0.89
-
-def def_mask_acc(color,ewha):
-    """
-    White, R. J. & Basri, G. 
-    VERY LOW MASS STARS AND BROWN DWARFS IN TAURUS-AURIGA. 
-    Astrophys. J. 582, 1109–1122 (2003).
-    """
-    if(~np.isnan(color+ewha)):  #If any is nan I cannot make a decision if they are accreating
-        if(color<spt_to_g_rp(2.7)):
-            return ewha < 10
-        elif(color<spt_to_g_rp(5.7)):
-            return ewha < 20
-        elif(color>=spt_to_g_rp(5.7)):
-            return ewha < 40
-        else:
-            return False
-    else:
-        return True
