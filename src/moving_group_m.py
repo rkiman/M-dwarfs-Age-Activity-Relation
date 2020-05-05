@@ -38,6 +38,10 @@ def compile_m_moving_groups_sample(ls_compatible):
     mask_run_banyan = (~np.isnan(ra+dec+pmra+pmra_error+pmdec+pmdec_error+
                                  parallax+parallax_error)
                        * (parallax/parallax_error > 8))
+    
+    n_kin = len(ra[mask_run_banyan])
+    print('Number of not accretors with good kinematics: {}'.format(n_kin))
+    
     #Run banyan
     result = banyan_sigma(ra=ra[mask_run_banyan],dec=dec[mask_run_banyan], 
                           pmra=pmra[mask_run_banyan],

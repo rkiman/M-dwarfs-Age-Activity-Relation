@@ -41,6 +41,8 @@ else:
     mask_m_dwarf = g-rp > 0.8
     
     literature_search = literature_search1[mask_nan*mask_zeros*mask_m_dwarf]
+    n_ls = len(literature_search)
+    print('Number of stars in the literature search sample: {}'.format(n_ls))
     
     #Add extinction corrected magnitudes to the sample
     literature_search = src.add_corrected_magnitudes(literature_search)
@@ -48,11 +50,19 @@ else:
     #Select compatible catalogs
     ls_compatible = src.select_compatible_measurements(literature_search,
                                                        max_order=2)
+    n_comp = len(ls_compatible)
+    print('Number of stars in the compatible sample: {}'.format(n_comp))
 
 #Identify possible accretors
 mask_not_acc = src.identify_accretors(ls_compatible)
 ls_c_not_acc = ls_compatible[mask_not_acc]
+ls_c_acc = ls_compatible[~mask_not_acc]
+ls_c_acc.write('Catalogs/literature_search_accretors.fits',format='fits',
+               overwrite=True)
 
+n_not_acc = len(ls_c_not_acc)
+print('Number of stars not accreating: {}'.format(n_not_acc))
+    
 #Identify M-dwarfs in moving groups
 m_dwarfs_mg,m_dwarfs_not_mg = src.compile_m_moving_groups_sample(ls_c_not_acc)
 

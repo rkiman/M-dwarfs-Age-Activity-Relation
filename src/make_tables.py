@@ -14,24 +14,30 @@ def make_table_for_paper_sources(source_num,Ncomp,compatible,total_comp,order):
     
     source_ref_table = Table.read('data/source_ref.csv')
     
+    mask_kiman = source_ref_table['source_ref']=='Kiman 2019'
+    i_kiman = source_ref_table['source_num'][mask_kiman][0]
+    
     #Ntot = len(ra)
     #Ncomp = len(ls_compatible[~np.isnan(ls_compatible['ewha'])])
     n_sources = len(source_ref_table['source_ref'])
     total_incompatible = 0
     papers_notes = 'Other works checked in literature search but were considered incompatible: '
     #Header
-    file_sources.write('\\begin{deluxetable*}{ccccc}[ht!]\n')
+    file_sources.write('\\begin{deluxetable*}{lcccc}[ht!]\n')
     file_sources.write('\\tablewidth{290pt}\n')
     file_sources.write('\\tabletypesize{\scriptsize}\n')
-    file_sources.write('\\tablecaption{Compatible references for $\haew$. \\label{table:source_ref}}\n')
-    file_sources.write('\\tablehead{\\colhead{Reference \\tablenotemark{a}} & \\colhead{Resolution} & \\colhead{$N$ Stars} & \\colhead{$N$ Stars Compatible} & \\colhead{OC \\tablenotemark{b}} \\\ & & Total='+str(Ncomp) +'& &\n}')
+    file_sources.write('\\tablecaption{Overlapping references for $\haew$. \\label{table:source_ref}}\n')
+    file_sources.write('\\tablehead{\\colhead{Reference \\tablenotemark{a}} & \\colhead{Spectral} & \\colhead{$N$ Stars} & \\colhead{$N$ Stars} & \\colhead{OC \\tablenotemark{c}} \\\ & Resolution & & Compatible \\tablenotemark{b} &\n}')
     file_sources.write('\\startdata \n')
     
-    for i in range(n_sources):
+    for i in range(n_sources):          
         if i in compatible:
             mask = i == compatible
             compatible_i = int(total_comp[mask][0])
-            order_i = int(order[mask][0])
+            if i==i_kiman:
+                order_i = 0
+            else:
+                order_i = int(order[mask][0])
         else:
             compatible_i = 0
             order_i = '-'
@@ -44,7 +50,8 @@ def make_table_for_paper_sources(source_num,Ncomp,compatible,total_comp,order):
             papers_notes = papers_notes + source_ref_table['cite'][i] + ', '
     file_sources.write('\\enddata \n')
     file_sources.write('\\tablenotetext{a}{'+ papers_notes +'.}\n')
-    file_sources.write('\\tablenotetext{b}{Order of compatibility. Order 1 is compatible with \\citet{Kiman2019}. Order 2 are compatible with order 1 catalogs.}\n')
+    file_sources.write('\\tablenotetext{b}{Compatible with \\citet{Kiman2019}.}\n')
+    file_sources.write('\\tablenotetext{c}{Order of compatibility. Order $1$ is compatible with \\citet{Kiman2019}. Order $2$ is compatible with at least one order $1$ catalog.}\n')
     file_sources.write('\\end{deluxetable*}\n')
 
     return 0

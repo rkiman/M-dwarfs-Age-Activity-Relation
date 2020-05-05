@@ -37,6 +37,9 @@ def select_compatible_measurements(literature_search,max_order):
                                    source_num,ewha,max_order)
     compatible,prob,total_comp,order,overlap_not_comp = res
     
+    text = 'Catalogs that have overlap but where found not comaptible: {}'
+    print(text.format(overlap_not_comp))
+    
     #Using the list of compatible catalogs make a mask of compatible stars
     #and define the final sample of compatible stars.
     mask_compatible = np.array([x in compatible for x 
@@ -141,7 +144,7 @@ def find_compatible_catalogs(idx_kiman,source_num_ref,same_star,source_num,
                 total_comp.append(matrix_prob[i,idx_kiman])
                 order.append(1)
             elif(i not in compatible and i not in overlap_not_comp 
-                 and prob_i <= 0.9):
+                 and prob_i != 0.0):
                 overlap_not_comp.append(i)
                 
     
@@ -157,7 +160,7 @@ def find_compatible_catalogs(idx_kiman,source_num_ref,same_star,source_num,
                         total_comp.append(matrix_prob[j,i])
                         order.append(2)
                     elif(j not in compatible and j not in overlap_not_comp 
-                         and prob_j <= 0.9):
+                         and prob_j != 0.0):
                         overlap_not_comp.append(j)
                         
     compatible,prob = np.array(compatible),np.array(prob)
