@@ -49,9 +49,10 @@ def def_mask_not_acc(color,ewha):
             return ewha < 10
         elif(color<spt_to_g_rp(5.7)):
             return ewha < 20
-        #elif(color>=spt_to_g_rp(5.7)):
-        elif(color<spt_to_g_rp(7.7)):
+        elif(color<spt_to_g_rp(7.7)):#elif(color>=spt_to_g_rp(5.7)):
             return ewha < 40
+        elif(color>=spt_to_g_rp(7.7)): #If it is later than M7.7 I don't have
+            return True                #any criteria
         else:
             return False
     else:
