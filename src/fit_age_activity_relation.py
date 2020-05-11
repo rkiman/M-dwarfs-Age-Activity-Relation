@@ -62,7 +62,7 @@ def fit_relation_complex_func(mask,color,log_age,log_lhalbol,
     
     return flat_samples
 
-def fit_halpha_simple(params,log_age):
+def fit_halpha_bpl(params,log_age):
 
     #a0,a1,a2,a3,log_f = params
     a0,a1,a2,a3 = params
@@ -74,12 +74,12 @@ def fit_halpha_simple(params,log_age):
 
     return halpha_model
         
-def lnlike_age_simple(params,log_age,log_lhalbol,log_lhalbol_error):
+def lnlike_age_bpl(params,log_age,log_lhalbol,log_lhalbol_error):
     
     #a0,a1,a2,a3,log_f = params
     a0,a1,a2,a3 = params
     
-    model_halpha = fit_halpha_simple(params,log_age)
+    model_halpha = fit_halpha_bpl(params,log_age)
     #sigma2 = log_lhalbol_error ** 2 + model_halpha ** 2 * np.exp(2 * log_f)
     sigma2 = log_lhalbol_error ** 2 
     if(a0<0 or a0>10.3 or a3>0 or a1>10 or a1 < -10):
@@ -90,13 +90,13 @@ def lnlike_age_simple(params,log_age,log_lhalbol,log_lhalbol_error):
 
 
 
-def fit_relation_simple_func(mask,log_age,log_lhalbol,
+def fit_relation_bpl(mask,log_age,log_lhalbol,
                              log_lhalbol_error,name='corner_fit.png'):
 
     #ini_params = np.array([9,-.1,1,-4,.01])
     ini_params = np.array([9,-.1,1,-4])
     
-    nll = lambda *args: -lnlike_age_simple(*args)
+    nll = lambda *args: -lnlike_age_bpl(*args)
     params = op.minimize(nll, ini_params, 
                          args=(log_age[mask],log_lhalbol[mask],
                                log_lhalbol_error[mask]))
@@ -110,7 +110,7 @@ def fit_relation_simple_func(mask,log_age,log_lhalbol,
     p0 = np.array([ini_params+np.random.rand(n_params)*0.0001
                    for i in range(nwalkers)])
     
-    sampler = emcee.EnsembleSampler(nwalkers,ndim,lnlike_age_simple, 
+    sampler = emcee.EnsembleSampler(nwalkers,ndim,lnlike_age_bpl, 
                                     args=[log_age[mask],log_lhalbol[mask],
                                           log_lhalbol_error[mask]])
     sampler.run_mcmc(p0, 10000)
@@ -138,3 +138,67 @@ def fit_relation_simple_func(mask,log_age,log_lhalbol,
     fig.savefig(path,dpi=300)
     
     return chain,flat_samples
+
+def lnlike_age_bpl_var(params,log_age,log_lhalbol,log_lhalbol_error):
+    
+    a0,a1,a2,a3,log_f = params
+    
+    model_halpha = fit_halpha_bpl(np.array([a0,a1,a2,a3]),log_age)
+    sigma2 = log_lhalbol_error ** 2 + model_halpha ** 2 * np.exp(2 * log_f)
+    
+    if(a0<0 or a0>10.3 or a3>0 or a1>10 or a1 < -10 or a2 < 0 or -10.0 > log_f or log_f > 1.0):
+        return -np.inf
+    else:
+        return -0.5 * np.sum((log_lhalbol - model_halpha) ** 2 / sigma2 + np.log(sigma2))
+
+    
+def fit_relation_bpl_var(mask,log_age,log_lhalbol,
+                         log_lhalbol_error,name='corner_fit.png'):
+
+    #ini_params = np.array([9,-.1,1,-4,.01])
+    ini_params = np.array([9,-.1,1,-4,-3])
+    
+    nll = lambda *args: -lnlike_age_bpl_var(*args)
+    params = op.minimize(nll, ini_params, 
+                         args=(log_age[mask],log_lhalbol[mask],
+                               log_lhalbol_error[mask]))
+    
+    #ini_params = [9,-1,-4,1,1]
+    ini_params = params.x
+    print(ini_params)
+    n_params = len(params.x)
+    
+    ndim, nwalkers = n_params, 150
+
+    p0 = np.array([ini_params+np.random.rand(n_params)*0.0001
+                   for i in range(nwalkers)])
+    
+    sampler = emcee.EnsembleSampler(nwalkers,ndim,lnlike_age_bpl_var, 
+                                    args=[log_age[mask],log_lhalbol[mask],
+                                          log_lhalbol_error[mask]])
+    sampler.run_mcmc(p0, 10000)
+    
+    chain = sampler.chain[:,500:,:]
+    flat_samples = chain.reshape((-1,ndim))
+    
+    #labels = ['$a_0$','$a_1$','$a_2$','$a_3$','logf']
+    labels = ['$a_0$','$a_1$','$a_2$','$a_3$',r'$\log f$']
+    '''
+    fig, axes = plt.subplots(3, figsize=(10, 7), sharex=True)
+    for i in range(ndim):
+        ax = axes[i]
+        ax.plot(flat_samples[:, :, i], "k", alpha=0.3)
+        ax.set_xlim(0, len(flat_samples))
+        ax.set_ylabel(labels[i])
+        ax.yaxis.set_label_coords(-0.1, 0.5)
+    
+    axes[-1].set_xlabel("step number");
+    '''
+    fig = corner.corner(flat_samples,labels=labels,quantiles=[.16,.50,.84],
+                        show_titles=True, title_kwargs={"fontsize": 12})
+    dropbox = '/Users/rociokiman/Dropbox (Personal)/Apps/Overleaf'
+    path = dropbox+'/Age-Activity Relation for M dwarfs/'+name
+    fig.savefig(path,dpi=300)
+    
+    return chain,flat_samples
+

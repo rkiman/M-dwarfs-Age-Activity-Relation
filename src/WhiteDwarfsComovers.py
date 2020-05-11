@@ -53,17 +53,20 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
     #Final mask for pairs includes selected co-movers which have a low 
     #probability of chance alignment
     mask_comovers = mask_comovers_all * (prob_chance_align <= 0.01)
+    mask_comp = ~np.isnan(m_dwarfs_pairs['ewha'])
     
     info = 'Number of m-dwarfs white dwarfs pairs: {}'
-    N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers_all])
+    N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers_all*mask_comp])
     print(info.format(N))
+    
     info = 'Number of m-dwarfs with prob of chance alignment > 0.01: {}'
-    mask_info = mask_comovers_all * (prob_chance_align > 0.01)
+    mask_info = mask_comovers_all * (prob_chance_align > 0.01) * mask_comp
     N = len(np.array(m_dwarfs_pairs['parallax'])[mask_info])
     print(info.format(N))
+    
     info = 'Number of m-dwarfs white dwarfs pairs with prob ' \
            'of chance alignment <= 0.01: {}'
-    N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers])
+    N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers*mask_comp])
     print(info.format(N))
     
     #Remove nans to calculate ages in the next step.

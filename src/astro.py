@@ -122,6 +122,28 @@ def calc_lhalbol(ewha,ewha_error,g_rp):
                 lhalbol[i] = ewha[i]*np.polyval(p,g_rp[i])
     
     return lhalbol,lhalbol_err
+
+def calc_log_lhalbol(ewha,ewha_error,g_rp):
+    chi_douglas2014 = np.array([6.6453, 6.0334, 5.2658, 4.4872, 3.5926, 
+                                2.4768, 1.7363, 1.2057, 0.6122, 0.3522])*1e-5
+    g_rp_kiman2019 = np.array([0.93, 1.01, 1.09, 1.16, 1.23, 1.32, 1.41, 
+                               1.47, 1.57, 1.63])
+    p = np.polyfit(g_rp_kiman2019,chi_douglas2014,4)
+
+    N = len(ewha)
+    log_lhalbol = np.ones(N)*np.nan 
+    log_lhalbol_err = np.ones(N)*np.nan
+    for i in range(N):
+        if((0.8 <= g_rp[i]) and (g_rp[i] <=1.65)):
+            if(~np.isnan(ewha_error[i]+ewha[i])):
+                dist_ewha = np.random.normal(ewha[i],ewha_error[i],2000)
+                dist_log_lhalbol = np.log10(dist_ewha*np.polyval(p,g_rp[i]))
+                log_lhalbol[i] = np.nanmedian(dist_log_lhalbol)
+                log_lhalbol_err[i] = np.nanstd(dist_log_lhalbol)
+            elif(np.isnan(ewha_error[i]) and ~np.isnan(ewha[i])):
+                log_lhalbol[i] = np.log10(ewha[i]*np.polyval(p,g_rp[i]))
+    
+    return log_lhalbol,log_lhalbol_err
             
 def organize_table_format(columns):
     

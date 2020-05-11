@@ -14,3 +14,4 @@ from .make_tables import *
 from .fit_age_activity_relation import *
 from .cross_validation import *
 from .accretors import *
+from .model_selection import *

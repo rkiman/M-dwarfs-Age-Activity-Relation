@@ -25,12 +25,3 @@ def calc_cross_validation(x,y,y_err,f,ini_params):
 def calc_cross_validation_score(y_pred,y_k,y_err_k):
     return np.sum((y_k-y_pred)**2 / y_err_k**2)
     
-        
-'''
-x = np.array([1,1,1,1])
-y = np.array([0,1,2,3])
-f = 1 
-ini_params = 1
-calc_cross_validation(x,y,f,ini_params)
-
-'''

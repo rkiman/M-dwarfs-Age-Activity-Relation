@@ -55,6 +55,10 @@ def compile_m_moving_groups_sample(ls_compatible):
     prob_ya = np.array(result['YA_PROB']).reshape(len(result['YA_PROB']),)
     best_ya = np.array(result['BEST_YA']).reshape(len(result['BEST_YA']),)
     
+    #for i in range(len(prob_ya)):
+    #    if(str(best_ya[i])=='ARG'):
+    #        prob_ya[i] = 0
+            
     #Mask for high likelihood members accordin to banyan
     highprob = prob_ya > 0.9
     
@@ -62,11 +66,11 @@ def compile_m_moving_groups_sample(ls_compatible):
     #Jonathan Gagne run Banyan on this sample for me and here are the results
     path = 'Catalogs/rocio_praesepe_sample.sav'
     #extracting best young asociationg and probability of being member
-    results = readsav(path,verbose=1)
+    results_pra = readsav(path,verbose=1)
     #best_ya_bytes = results['out']['best_ya']
     #best_ya_pra = np.array([x.decode("utf-8") for x in best_ya_bytes])
-    ya_prob_pra = results['out']['YA_PROB']
-    source_id_pra = results['input']['source_id'][ya_prob_pra>0.9]
+    ya_prob_pra = results_pra['out']['YA_PROB']
+    source_id_pra = results_pra['input']['source_id'][ya_prob_pra>0.9]
     
     #Mask for PRA members
     bf_pra = np.array([True if x in source_id_pra else False 
@@ -85,6 +89,7 @@ def compile_m_moving_groups_sample(ls_compatible):
             ls_compatible['group_num'][i] = mg_ref['group_num'][mask_ref][0]
             ls_compatible['age'][i] = mg_ref['age'][mask_ref][0]
             ls_compatible['age_error'][i] = mg_ref['age_error'][mask_ref][0]
+        
             
     #Define mask for high likelihood members including praesepe        
     mask_membership = np.logical_or(highprob,bf_pra[mask_run_banyan])
@@ -93,7 +98,8 @@ def compile_m_moving_groups_sample(ls_compatible):
     mg_sample['ya_prob'] = prob_ya[mask_membership]
     mg_sample['best_ya'] = np.array([str(x) for x in best_ya[mask_membership]])
     
-    print("Number of high like mem: {}".format(len(mg_sample)))
+    n_mg = len(mg_sample[~np.isnan(mg_sample['ewha'])])
+    print("Number of high like mem: {}".format(n_mg))
     
     #Create sample of stars that don't belong to a moving group:
     m_dwarfs_not_mg = ls_compatible[mask_run_banyan][~mask_membership]
