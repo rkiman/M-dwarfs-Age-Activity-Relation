@@ -7,7 +7,7 @@ from astropy.coordinates import SkyCoord
 import astropy.units as u
 from .make_tables import make_table_for_paper_sources
 
-def select_compatible_measurements(literature_search,max_order):
+def select_compatible_measurements(literature_search,same_star,max_order):
     '''
     Select the catalogs which are first and second order compatible with
     Kiman et al. 2019. from the literature search sample.
@@ -15,17 +15,11 @@ def select_compatible_measurements(literature_search,max_order):
     source_ref_table = Table.read('data/source_ref.csv')
     #Numbers for each reference
     source_num_ref = source_ref_table['source_num']
-    
-    ra = np.array(literature_search['ra'])
-    dec = np.array(literature_search['dec'])
+
     ewha = np.array(literature_search['ewha'])
     ewha_err = np.array(literature_search['ewha_error'])
     source_num = np.array(literature_search['source_num'])
-    
-    #Identify repeated stars
-    same_star = find_repeated_stars(ra,dec)
-    literature_search['same_star'] = same_star
-    
+      
     #Identify repeated measurements
     mask_idx_to_remove = remove_repeated_measurements(ewha,ewha_err,same_star)
     
@@ -35,7 +29,13 @@ def select_compatible_measurements(literature_search,max_order):
     
     res = find_compatible_catalogs(idx_kiman,source_num_ref,same_star,
                                    source_num,ewha,max_order)
-    compatible,prob,total_comp,order,overlap_not_comp = res
+    compatible = res[0]
+    prob = res[1]
+    total_comp = res[2]
+    order = res[3]
+    overlap_not_comp = res[4]
+    total_overlap_comp = res[5]
+    total_overlap_not_comp = res[6]
     
     text = 'Catalogs that have overlap but where found not comaptible: {}'
     print(text.format(overlap_not_comp))
@@ -56,7 +56,8 @@ def select_compatible_measurements(literature_search,max_order):
     
     Ncomp = len(ls_compatible['ewha'][~np.isnan(ls_compatible['ewha'])])
     make_table_for_paper_sources(ls_compatible['source_num'],Ncomp,
-                                 compatible,total_comp,order)
+                                 compatible,total_comp,order,overlap_not_comp,
+                                 total_overlap_comp,total_overlap_not_comp)
     
     ls_compatible.write('Catalogs/literature_search_gaia_compatible.fits',
                         format='fits')
@@ -130,42 +131,48 @@ def find_compatible_catalogs(idx_kiman,source_num_ref,same_star,source_num,
     
     compatible = []
     overlap_not_comp = []
+    total_overlap_not_comp = []
     prob = []
     total_comp = []
+    total_overlap_comp = []
     order = []
     
     #First order compatible catalogs
     for i in range(N_ref):
-        if(matrix_prob[i,idx_kiman] > 0.0):
+        if(matrix_prob_all[i,idx_kiman] > 0.0):
             prob_i = matrix_prob[i,idx_kiman]/matrix_prob_all[i,idx_kiman]
             if(i not in compatible and prob_i > 0.9):
                 compatible.append(i)
                 prob.append(prob_i)
                 total_comp.append(matrix_prob[i,idx_kiman])
                 order.append(1)
-            elif(i not in compatible and i not in overlap_not_comp 
-                 and prob_i != 0.0):
+                total_overlap_comp.append(matrix_prob_all[i,idx_kiman])
+            elif(i not in compatible and i not in overlap_not_comp):
                 overlap_not_comp.append(i)
+                total_overlap_not_comp.append(matrix_prob_all[i,idx_kiman])
                 
     
     if(max_order==2):
         #Second order compatible catalogs
         for i in compatible:
             for j in range(N_ref):
-                if((matrix_prob[j,i] > 0)):
+                if((matrix_prob_all[j,i] > 0)):
                     prob_j = matrix_prob[j,i]/matrix_prob_all[j,i]
                     if(j not in compatible and prob_j > 0.9):
                         compatible.append(j)
                         prob.append(prob_j)
                         total_comp.append(matrix_prob[j,i])
                         order.append(2)
-                    elif(j not in compatible and j not in overlap_not_comp 
-                         and prob_j != 0.0):
+                        total_overlap_comp.append(matrix_prob_all[j,i])
+                    elif(j not in compatible and j not in overlap_not_comp):
                         overlap_not_comp.append(j)
+                        total_overlap_not_comp.append(matrix_prob_all[j,i])
                         
     compatible,prob = np.array(compatible),np.array(prob)
     total_comp,order = np.array(total_comp),np.array(order)
     overlap_not_comp = np.array(overlap_not_comp)
+    total_overlap_comp = np.array(total_overlap_comp)
+    total_overlap_not_comp = np.array(total_overlap_not_comp)
     
     #Sort compatible catalogs
     idx = np.argsort(compatible)
@@ -173,8 +180,11 @@ def find_compatible_catalogs(idx_kiman,source_num_ref,same_star,source_num,
     prob = prob[idx]
     total_comp = total_comp[idx]
     order = order[idx]
+    total_overlap_comp = total_overlap_comp[idx]
+
     
-    return compatible,prob,total_comp,order,overlap_not_comp
+    return [compatible,prob,total_comp,order,overlap_not_comp,
+            total_overlap_comp,total_overlap_not_comp]
 
 
 def calc_compatible_matrix(source_num_ref,same_star,source_num,ewha):

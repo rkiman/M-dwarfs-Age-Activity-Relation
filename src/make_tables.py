@@ -5,54 +5,63 @@ import os
 from astropy.table import Table
 import numpy as np
 
-def make_table_for_paper_sources(source_num,Ncomp,compatible,total_comp,order):
+def make_table_for_paper_sources(source_num,Ncomp,compatible,total_comp,order,
+                                 overlap_not_comp,total_overlap_comp,
+                                 total_overlap_not_comp):
      
-    dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
-    paper = 'Age-Activity Relation for M dwarfs/'
-    os.remove(dropbox_path + paper + 'sources_summary.tex')
-    file_sources = open(dropbox_path + paper + 'sources_summary.tex','x')
-    
+    #Set up path to save file
+    dat_path='/Users/rociokiman/Documents/M-dwarfs-Age-Activity-Relation/data/'
+    if(os.path.exists(dat_path + 'sources_summary.txt')):
+        os.remove(dat_path + 'sources_summary.txt')
+    file_sources = open(dat_path + 'sources_summary.txt','x')
+    file_sources.write('#Ref Nstars Noverlap Ncompatible OC\n')
+                       
+    #Load reference table for source
     source_ref_table = Table.read('data/source_ref.csv')
+    n_sources = len(source_ref_table['source_ref'])
     
+    #Identify number for Kiman et al. 2019
     mask_kiman = source_ref_table['source_ref']=='Kiman 2019'
     i_kiman = source_ref_table['source_num'][mask_kiman][0]
-    
-    #Ntot = len(ra)
-    #Ncomp = len(ls_compatible[~np.isnan(ls_compatible['ewha'])])
-    n_sources = len(source_ref_table['source_ref'])
-    total_incompatible = 0
-    papers_notes = 'Other works checked in literature search but were considered incompatible: '
-    #Header
-    file_sources.write('\\begin{deluxetable*}{lcccc}[ht!]\n')
-    file_sources.write('\\tablewidth{290pt}\n')
-    file_sources.write('\\tabletypesize{\scriptsize}\n')
-    file_sources.write('\\tablecaption{Overlapping references for $\haew$. \\label{table:source_ref}}\n')
-    file_sources.write('\\tablehead{\\colhead{Reference \\tablenotemark{a}} & \\colhead{Spectral} & \\colhead{$N$ Stars} & \\colhead{$N$ Stars} & \\colhead{OC \\tablenotemark{c}} \\\ & Resolution & & Compatible \\tablenotemark{b} &\n}')
-    file_sources.write('\\startdata \n')
-    
-    for i in range(n_sources):          
+
+
+    for i in range(n_sources):  
+        #Total number of objects from the source
+        n_i = len(source_num[source_num == i]) 
+        
+        #Sources with objects compatible objects from the soruce
         if i in compatible:
             mask = i == compatible
-            compatible_i = int(total_comp[mask][0])
+            n_compatible_i = int(total_comp[mask][0])
+            n_overlap_i = int(total_overlap_comp[mask][0])
             if i==i_kiman:
                 order_i = 0
             else:
                 order_i = int(order[mask][0])
+            
+            file_sources.write(str(source_ref_table['source_num'][i]) + '\t' + 
+                               str(n_i) +'\t'+ str(n_overlap_i) + '\t' + 
+                               str(n_compatible_i) + '\t' + 
+                               str(order_i) + '\n') 
+        #Sources with objects not compatible but with overlap
+        elif(i in overlap_not_comp):
+            mask = i == overlap_not_comp
+            n_compatible_i = 0
+            order_i = np.nan
+            n_overlap_i = int(total_overlap_not_comp[mask][0])
+            file_sources.write(str(source_ref_table['source_num'][i]) + '\t' + 
+                           str(n_i) +'\t'+ str(n_overlap_i) + '\t' + 
+                           str(n_compatible_i) + '\t' + 
+                           str(order_i) + '\n') 
+        #Sources with objects without overlap
         else:
-            compatible_i = 0
-            order_i = '-'
-        n_i = len(source_num[source_num == i])
-        if(n_i!=0 and compatible_i!=0):
-            file_sources.write('{}&{}&{}&{}&{}\\\ \n'.format(source_ref_table['cite'][i],source_ref_table['resolution'][i],
-                                                   n_i,compatible_i,order_i)) 
-        elif(compatible_i==0):
-            total_incompatible += n_i
-            papers_notes = papers_notes + source_ref_table['cite'][i] + ', '
-    file_sources.write('\\enddata \n')
-    file_sources.write('\\tablenotetext{a}{'+ papers_notes +'.}\n')
-    file_sources.write('\\tablenotetext{b}{Compatible with \\citet{Kiman2019}.}\n')
-    file_sources.write('\\tablenotetext{c}{Order of compatibility. Order $1$ is compatible with \\citet{Kiman2019}. Order $2$ is compatible with at least one order $1$ catalog.}\n')
-    file_sources.write('\\end{deluxetable*}\n')
+            n_compatible_i = 0
+            order_i = np.nan
+            n_overlap_i = 0
+            file_sources.write(str(source_ref_table['source_num'][i]) + '\t' + 
+                           str(n_i) +'\t'+ str(n_overlap_i) + '\t' + 
+                           str(n_compatible_i) + '\t' + 
+                           str(order_i) + '\n') 
 
     return 0
 
@@ -124,45 +133,121 @@ def make_table_summary_age_calibrators(age_calibrators):
 
     mask_ha = ~np.isnan(age_calibrators['ewha'])
     source_ref_table = Table.read('../data/source_ref.csv')
-        
+    data_compatible = np.loadtxt('../data/sources_summary.txt')
+
     dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
     paper = 'Age-Activity Relation for M dwarfs/'
     if(os.path.exists(dropbox_path + paper + 'summary_age_calibrators.tex')):
         os.remove(dropbox_path + paper + 'summary_age_calibrators.tex')
-    file_sources = open(dropbox_path + paper + 'summary_age_calibrators.tex','x')
-
+    file_sources = open(dropbox_path + paper + 'summary_age_calibrators.tex',
+                        'x')
+    
     #Header
-    file_sources.write('\\begin{deluxetable*}{lccc}[ht!]\n')
+    header_text = '\\tablehead{\
+    \\colhead{Reference \\tablenotemark{a}} \
+    & \\colhead{Spectral} \
+    & \\colhead{$N$ Stars} \
+    & \\colhead{$N$ Stars} \
+    & \\colhead{OC \\tablenotemark{c}} \
+    & \\multicolumn{2}{c}{Ages from} \
+    \\\ & Resolution & & Compatible \\tablenotemark{b} \
+    &  &moving group & white dwarf \n}'
+    
+    title = '\\tablecaption{Age Calibrators summary. \\label{table:age_cal}}\n'
+    
+    file_sources.write('\\begin{deluxetable*}{lcccccc}[ht!]\n')
     file_sources.write('\\tablewidth{290pt}\n')
     file_sources.write('\\tabletypesize{\scriptsize}\n')
-    file_sources.write('\\tablecaption{Age Calibrators summary. \\label{table:age_cal}}\n')
-    file_sources.write('\\tablehead{\\colhead{Reference} & \\colhead{Spectral} & \\colhead{Stars in Moving groups} & \\colhead{Stars with white dwarf companion} \\\ & Resolution & Compatible/All & Compatible/All\n}')
+    file_sources.write(title)
+    file_sources.write(header_text)
     file_sources.write('\\startdata \n')
     
-    for x,y,z in zip(source_ref_table['source_ref'],source_ref_table['cite'],
+    catalogs_no_overlap = []
+    catalogs_no_compatible = []
+    other_catalogs = []
+    catalogs_no_age = []
+    
+    for x,y,z in zip(source_ref_table['source_num'],source_ref_table['cite'],
                      source_ref_table['resolution']):
-        mask_source = age_calibrators['source_ref'] == x
+        mask_source = age_calibrators['source_num'] == x
+        mask_source_2 = data_compatible[:,0] == x
         mask_wd = age_calibrators['group_num'] == 0
         mask_mg = age_calibrators['group_num'] != 0
         n_wd = len(age_calibrators[mask_source*mask_wd*mask_ha])
         n_mg = len(age_calibrators[mask_source*mask_mg*mask_ha])
         n_wd_all = len(age_calibrators[mask_source*mask_wd])
         n_mg_all = len(age_calibrators[mask_source*mask_mg])
-        if(any(np.array([n_wd,n_mg,n_wd_all,n_mg_all])!=0)):
-            if(all(np.array([n_wd,n_wd_all])==0)):
-                if(n_mg==n_mg_all):
-                    file_sources.write(y+'&'+z+'&'+str(n_mg)+'&'+'-'+'\\\ \n')
+        
+        n_tot = int(data_compatible[:,1][mask_source_2])
+        n_overlap = int(data_compatible[:,2][mask_source_2])
+        n_comp = int(data_compatible[:,3][mask_source_2])
+        if(~np.isnan(data_compatible[:,4][mask_source_2])):
+            n_oc = int(data_compatible[:,4][mask_source_2])
+        else:
+            n_oc = data_compatible[:,4][mask_source_2]
+        
+        if(n_tot==0 and n_overlap==0 and n_comp==0):
+            other_catalogs.append(y)
+        elif(n_tot!=0 and n_overlap==0 and n_comp==0):
+            catalogs_no_overlap.append(y)
+        elif(n_tot!=0 and n_overlap!=0 and n_comp==0):
+            catalogs_no_compatible.append(y)
+        else:
+            if(any(np.array([n_wd,n_mg,n_wd_all,n_mg_all])!=0)):
+                if(all(np.array([n_wd,n_wd_all])==0)):
+                    if(n_mg==n_mg_all):
+                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)+
+                                           '&'+str(n_oc)+'&'+str(n_mg)+
+                                           '&'+'-'+'\\\ \n')
+                    else:
+                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)+'&'
+                                           +str(n_oc)+'&'+str(n_mg)+'/'
+                                           +str(n_mg_all)+'&'
+                                           +'-'+'\\\ \n')
+                elif(all(np.array([n_mg,n_mg_all])==0)):
+                    if(n_wd==n_wd_all):
+                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)+
+                                           '&'+str(n_oc)+'&'+'-'+
+                                           '&'+str(n_wd)+'\\\ \n')
+                    else:
+                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)+'&'
+                                           +str(n_oc)+'&'+'-'+'&'
+                                           +str(n_wd)+'/'+str(n_wd_all)+'\\\ \n')
+                elif(n_mg==n_mg_all and n_wd==n_wd_all):
+                    file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)+'&'
+                                       +str(n_oc)+'&'+str(n_mg)+'&'
+                                       +str(n_wd)+'\\\ \n') 
                 else:
-                    file_sources.write(y+'&'+z+'&'+str(n_mg)+'/'+str(n_mg_all)+'&'
-                                       +'-'+'\\\ \n')
-            elif(n_mg==n_mg_all and n_wd==n_wd_all):
-                file_sources.write(y+'&'+z+'&'+str(n_mg)+'&'
-                                   +str(n_wd)+'\\\ \n') 
+                    file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)
+                    +'&'+str(n_oc)+'&'+str(n_mg)+'/'+str(n_mg_all)+'&'
+                                       +str(n_wd)+'/'+str(n_wd_all)+'\\\ \n')
             else:
-                file_sources.write(y+'&'+z+'&'+str(n_mg)+'/'+str(n_mg_all)+'&'
-                                   +str(n_wd)+'/'+str(n_wd_all)+'\\\ \n') 
+                catalogs_no_age.append(y)
 
     file_sources.write('\\enddata \n')
+
+    papers_notes='Compatible catalogs without age calibrators: '
+    for catalog_i in catalogs_no_age:
+        papers_notes = papers_notes + catalog_i + ', '
+        
+    papers_notes=papers_notes+'.\n Catalogs with overlap but not compatibles: '
+    for catalog_i in catalogs_no_compatible:
+        papers_notes = papers_notes + catalog_i + ', '
+
+    papers_notes=papers_notes+'.\n Catalogs without overlap: '
+    for catalog_i in catalogs_no_overlap:
+        papers_notes = papers_notes + catalog_i + ', '
+    
+    papers_notes=papers_notes+'.\n Other catalogs checked: '
+    for catalog_i in other_catalogs:
+        papers_notes = papers_notes + catalog_i + ', '
+    
+    file_sources.write('\\tablenotetext{a}{'+ papers_notes +'.}\n')
+    file_sources.write('\\tablenotetext{b}{Compatible with \
+                       \\citet{Kiman2019}.}\n')
+    file_sources.write('\\tablenotetext{c}{Order of compatibility. Order $1$\
+                       is compatible with \\citet{Kiman2019}. Order $2$ is \
+                       compatible with at least one order $1$ catalog.}\n')
     file_sources.write('\\end{deluxetable*}\n')
 
     return 0

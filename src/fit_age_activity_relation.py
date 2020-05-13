@@ -64,7 +64,6 @@ def fit_relation_complex_func(mask,color,log_age,log_lhalbol,
 
 def fit_halpha_bpl(params,log_age):
 
-    #a0,a1,a2,a3,log_f = params
     a0,a1,a2,a3 = params
     
     halpha_model = np.ones(len(log_age))*np.nan
@@ -76,38 +75,37 @@ def fit_halpha_bpl(params,log_age):
         
 def lnlike_age_bpl(params,log_age,log_lhalbol,log_lhalbol_error):
     
-    #a0,a1,a2,a3,log_f = params
+
     a0,a1,a2,a3 = params
     
     model_halpha = fit_halpha_bpl(params,log_age)
-    #sigma2 = log_lhalbol_error ** 2 + model_halpha ** 2 * np.exp(2 * log_f)
     sigma2 = log_lhalbol_error ** 2 
     if(a0<0 or a0>10.3 or a3>0 or a1>10 or a1 < -10):
         return -np.inf
     else:
-        #return -0.5 * np.sum((log_lhalbol - model_halpha) ** 2 / sigma2 + np.log(sigma2))
         return -0.5 * np.sum((log_lhalbol - model_halpha) ** 2 / sigma2)
 
 
 
 def fit_relation_bpl(mask,log_age,log_lhalbol,
-                             log_lhalbol_error,name='corner_fit.png'):
+                     log_lhalbol_error,ini_params = np.array([9,-.1,1,-4]),
+                     sigma_random = 0.001,
+                     name='corner_fit.png'):
 
-    #ini_params = np.array([9,-.1,1,-4,.01])
-    ini_params = np.array([9,-.1,1,-4])
     
     nll = lambda *args: -lnlike_age_bpl(*args)
     params = op.minimize(nll, ini_params, 
                          args=(log_age[mask],log_lhalbol[mask],
                                log_lhalbol_error[mask]))
     
-    #ini_params = [9,-1,-4,1,1]
     ini_params = params.x
     n_params = len(params.x)
     
+    print(ini_params)
+    
     ndim, nwalkers = n_params, 100
 
-    p0 = np.array([ini_params+np.random.rand(n_params)*0.0001
+    p0 = np.array([ini_params+np.random.rand(n_params)*sigma_random
                    for i in range(nwalkers)])
     
     sampler = emcee.EnsembleSampler(nwalkers,ndim,lnlike_age_bpl, 

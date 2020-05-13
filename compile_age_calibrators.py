@@ -5,7 +5,7 @@ from astropy.table import Table,vstack
 import numpy as np
 import os
 import src
-
+#%%  
 '''
 This main file runs code in the src folder to compile the sample of age
 calibrators. First looks for m dwarfs in moving groups using Banyan Sigma. 
@@ -15,6 +15,7 @@ The final sample is saved in a folder called Catalogs.
 This main file creates (if they don't exists already, so delete before run if
 they do):
     - 'Catalogs/literature_search_gaia_compatible.fits'
+    - 'Catalogs/literature_search_accretors.fits'
     - 'Catalogs/literature_search_not_mg.fits'
     - 'Catalogs/literature_search_mg.fits'
     - 'Catalogs/wdm_binaries.fits'
@@ -46,13 +47,18 @@ else:
     
     #Add extinction corrected magnitudes to the sample
     literature_search = src.add_corrected_magnitudes(literature_search)
-    
-    #Select compatible catalogs
-    ls_compatible = src.select_compatible_measurements(literature_search,
-                                                       max_order=2)
-    n_comp = len(ls_compatible)
-    print('Number of stars in the compatible sample: {}'.format(n_comp))
+#%%    
+    #Find repeated stars
+    same_star = src.find_repeated_stars(literature_search['ra'],
+                                        literature_search['dec'])
 
+    literature_search['same_star'] = same_star
+#%%    #Select compatible catalogs
+    ls_compatible = src.select_compatible_measurements(literature_search,
+                                                       same_star,max_order=2)
+    n_comp = len(ls_compatible[~np.isnan(ls_compatible['ewha'])])
+    print('Number of stars in the compatible sample: {}'.format(n_comp))
+#%%
 #Identify possible accretors
 mask_not_acc = src.identify_accretors(ls_compatible)
 ls_c_not_acc = ls_compatible[mask_not_acc]
@@ -60,7 +66,7 @@ ls_c_acc = ls_compatible[~mask_not_acc]
 ls_c_acc.write('Catalogs/literature_search_accretors.fits',format='fits',
                overwrite=True)
 
-n_not_acc = len(ls_c_not_acc)
+n_not_acc = len(ls_c_not_acc[~np.isnan(ls_c_not_acc['ewha'])])
 print('Number of stars not accreating: {}'.format(n_not_acc))
     
 #Identify M-dwarfs in moving groups
@@ -74,7 +80,9 @@ m_dwarfs_wd = src.compile_m_wd_sample(m_dwarfs_not_mg)
 #Combine results 
 age_calibrators = vstack([m_dwarfs_mg,m_dwarfs_wd])
 
-print('Total number of age calibrators: {}'.format(len(age_calibrators)))
+mask_ha = ~np.isnan(age_calibrators['ewha'])
+n_tot_cal = len(age_calibrators[mask_ha])
+print('Total number of age calibrators: {}'.format(n_tot_cal))
 
 #Calculate LHalphaLbol
 lhalbol,lhalbol_error = src.calc_lhalbol(age_calibrators['ewha'],

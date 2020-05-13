@@ -28,24 +28,25 @@ def broken_power_law(x,*p):
 
 
 
-def select_model(lage,log_lhalbol,log_lhalbol_error,mask_good):
+def select_model(lage,log_lhalbol,log_lhalbol_error,mask_good,
+                 bpl_ini_p=np.array([9,-.01,-3,-4])):
     
     scores = []
-    for n in range(2,8):
+    x_degree = np.arange(2,14)
+    for n in x_degree:
         ini_params = np.ones(n)
         scores.append(calc_cross_validation(lage[mask_good],
                                             log_lhalbol[mask_good],
                                             log_lhalbol_error[mask_good],
                                             polynomial,ini_params))
         
-    ini_params = np.array([9,-.1,1,-4])
     score_broken = calc_cross_validation(lage[mask_good],
                                          log_lhalbol[mask_good],
                                          log_lhalbol_error[mask_good],
-                                         broken_power_law,ini_params)
+                                         broken_power_law,bpl_ini_p)
 
 
-    ini_params = np.ones(4)
+    ini_params = np.ones(6)
     popt,pcov=curve_fit(polynomial,lage[mask_good],log_lhalbol[mask_good],
                         p0=ini_params,sigma=log_lhalbol_error[mask_good])
     
@@ -62,8 +63,8 @@ def select_model(lage,log_lhalbol,log_lhalbol_error,mask_good):
                                sigma=log_lhalbol_error[mask_good])
     
     x=np.linspace(6,10,100)
-    f,(ax1,ax2) = plt.subplots(1,2,figsize=(11,4.5))
-    ax1.plot(np.arange(2,8)-1,scores,'.-',label='Polynomial')
+    f,(ax1,ax2) = plt.subplots(1,2,figsize=(7,3))
+    ax1.plot(x_degree-1,scores,'.-',label='Polynomial')
     ax1.axhline(y=score_broken,color='k',label='Broken power law')
     ax1.set_ylabel('Cross-validation score')
     ax1.set_xlabel('Polynomial degree')
