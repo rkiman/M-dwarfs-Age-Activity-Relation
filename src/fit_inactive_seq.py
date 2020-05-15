@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 
 def fit_inactive_sequence():
 
+    deg = 3
+    
     path='/Users/rociokiman/Dropbox (Hunter College)/Catalogs/Newton2017_gaia.fit'
     newton2017 = Table.read(path)
     catalog = Table.read('../Catalogs/age_calibrators_bayes.fits')
@@ -26,13 +28,13 @@ def fit_inactive_sequence():
     mask_nan = ~np.isnan(color+ewha)* (ewha < 0.3)
     color1,ewha1 = color[mask_nan],ewha[mask_nan]
     
-    p = np.polyfit(color1,ewha1,8)
+    p = np.polyfit(color1,ewha1,deg)
     mask = abs(np.polyval(p,color1)-ewha1) < 0.2
     for i in range(10):
-        p = np.polyfit(color1[mask],ewha1[mask],8)
+        p = np.polyfit(color1[mask],ewha1[mask],deg)
         mask = abs(np.polyval(p,color1)-ewha1) < 0.2  
     
-    x = np.linspace(0.5,1.5,10)
+    x = np.linspace(0.8,1.5,10)
     
     plt.plot(color,ewha,'.')
     plt.plot(x,np.polyval(p,x),'-k')

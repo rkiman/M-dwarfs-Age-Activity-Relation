@@ -46,10 +46,12 @@ def find_binaries(color,abs_mag,group,cluster):
 
 def calc_activity_fraction(color,ewha,method_bin):
     #polynomial for inactive stars
-    p_inactive = np.array([395.50786613,-3045.0560077,9964.56950987,
-                           -18068.29454717,19816.23461458,
-                           -13428.70983305,5469.77129071,
-                           -1212.66808967,108.51204825])
+    #p_inactive = np.array([395.50786613,-3045.0560077,9964.56950987,
+    #                       -18068.29454717,19816.23461458,
+    #                       -13428.70983305,5469.77129071,
+    #                       -1212.66808967,108.51204825])
+    p_inactive = np.array([-22.81938807,108.69676223,-191.72732865,
+                           148.87638458,-43.17475922])
     
     #define bins of colors 
     _,color_range = np.histogram(color,bins=method_bin)
