@@ -37,8 +37,10 @@ def select_compatible_measurements(literature_search,same_star,max_order):
     total_overlap_comp = res[5]
     total_overlap_not_comp = res[6]
     
-    text = 'Catalogs that have overlap but where found not comaptible: {}'
-    print(text.format(overlap_not_comp))
+    #Open log file
+    log_file = open('log.txt','a')
+    text = 'Catalogs that have overlap but where found not compatible: {}\n'
+    log_file.write(text.format(overlap_not_comp))
     
     #Using the list of compatible catalogs make a mask of compatible stars
     #and define the final sample of compatible stars.
@@ -47,6 +49,11 @@ def select_compatible_measurements(literature_search,same_star,max_order):
     
     #Remove repeated measurements
     ls_compatible = literature_search[~mask_idx_to_remove]
+    n_lit_search = len(literature_search)
+    n_comp = len(ls_compatible)
+    text = 'Number of stars removed because they where\
+    repeated measurements: {}\n'
+    log_file.write(text.format(n_lit_search-n_comp))
     
     #Add a new ewha column to distinguish between compatible and not compatible
     ls_compatible['ewha_all'] = ls_compatible['ewha']

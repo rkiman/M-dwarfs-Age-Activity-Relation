@@ -4,10 +4,14 @@
 import os
 from astropy.table import Table
 import numpy as np
+from accretors import calc_delta_ha_for_accretors
 
 def make_table_for_paper_sources(source_num,Ncomp,compatible,total_comp,order,
                                  overlap_not_comp,total_overlap_comp,
                                  total_overlap_not_comp):
+
+    #Make latex table summarizing all they studies used in this paper. 
+
      
     #Set up path to save file
     dat_path='/Users/rociokiman/Documents/M-dwarfs-Age-Activity-Relation/data/'
@@ -65,8 +69,12 @@ def make_table_for_paper_sources(source_num,Ncomp,compatible,total_comp,order,
 
     return 0
 
+
 def make_table_for_wd(binaries):
-    
+    '''
+    Makes latex table with the summary of the white dwarfs values calculated
+    with wdwarfdate.
+    '''
     
     dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
     paper = 'wdwarfdate/'
@@ -100,6 +108,10 @@ def make_table_for_wd(binaries):
     return 0
 
 def make_table_wd_ages(binaries):
+    '''
+    Makes a table summary of white dwarfs with only the total age calculated
+    and the Gaia id for the M dwarf and the white dwarf in the pair.
+    '''
 
     dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
     paper = 'Age-Activity Relation for M dwarfs/'
@@ -130,6 +142,10 @@ def make_table_wd_ages(binaries):
     return 0
 
 def make_table_summary_age_calibrators(age_calibrators):
+    '''
+    Makes a table summarizing the age calibrators and the sources from where
+    they came from.
+    '''
 
     mask_ha = ~np.isnan(age_calibrators['ewha'])
     source_ref_table = Table.read('../data/source_ref.csv')
@@ -196,25 +212,31 @@ def make_table_summary_age_calibrators(age_calibrators):
             if(any(np.array([n_wd,n_mg,n_wd_all,n_mg_all])!=0)):
                 if(all(np.array([n_wd,n_wd_all])==0)):
                     if(n_mg==n_mg_all):
-                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)+
+                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'
+                                           +str(n_comp)+
                                            '&'+str(n_oc)+'&'+str(n_mg)+
                                            '&'+'-'+'\\\ \n')
                     else:
-                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)+'&'
+                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'
+                                           +str(n_comp)+'&'
                                            +str(n_oc)+'&'+str(n_mg)+'/'
                                            +str(n_mg_all)+'&'
                                            +'-'+'\\\ \n')
                 elif(all(np.array([n_mg,n_mg_all])==0)):
                     if(n_wd==n_wd_all):
-                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)+
+                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'
+                                           +str(n_comp)+
                                            '&'+str(n_oc)+'&'+'-'+
                                            '&'+str(n_wd)+'\\\ \n')
                     else:
-                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)+'&'
+                        file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'
+                                           +str(n_comp)+'&'
                                            +str(n_oc)+'&'+'-'+'&'
-                                           +str(n_wd)+'/'+str(n_wd_all)+'\\\ \n')
+                                           +str(n_wd)+'/'+str(n_wd_all)
+                                           +'\\\ \n')
                 elif(n_mg==n_mg_all and n_wd==n_wd_all):
-                    file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'+str(n_comp)+'&'
+                    file_sources.write(y+'&'+z+'&'+str(n_tot)+'&'
+                                       +str(n_comp)+'&'
                                        +str(n_oc)+'&'+str(n_mg)+'&'
                                        +str(n_wd)+'\\\ \n') 
                 else:
@@ -252,9 +274,60 @@ def make_table_summary_age_calibrators(age_calibrators):
 
     return 0
 
+def make_table_accretors(accretors):
+    '''
+    Makes a latex table with a summary of the accreators found in the
+    literature search sample using the criterion from 
+    White,R.J. & Basri,G. Astrophys. J. 582, 1109–1122 (2003).
+    '''
+    mask_nan = ~np.isnan(accretors['ewha']+accretors['ewha_error'])
+    n_acc = 5
+    rand_idx = np.random.randint(0,len(accretors[mask_nan]),n_acc)
+    
+    source_id = accretors['source_id'][mask_nan][rand_idx]
+    g_rp = accretors['g_corr'][mask_nan][rand_idx]-accretors['rp_corr'][mask_nan][rand_idx]
+    ewha = accretors['ewha'][mask_nan][rand_idx]
+    ewha_error = accretors['ewha_error'][mask_nan][rand_idx]
+    
+    dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
+    paper = 'Age-Activity Relation for M dwarfs/'
+    if(os.path.exists(dropbox_path + paper + 'summary_accretors.tex')):
+        os.remove(dropbox_path + paper + 'summary_accretors.tex')
+    file_sources = open(dropbox_path + paper + 'summary_accretors.tex','x')
+    
+    #Header
+    header_text = '\\tablehead{\
+    \\colhead{\\textit{Gaia} source id} \
+    & \\colhead{$\\haew$} \
+    & \\colhead{$\\Delta \\haew$} \n}'
+    
+    title = '\\tablecaption{Accretors found with the criterion from \
+    \\citet{White2003}. \\label{table:accretors}}\n'
+    
+    file_sources.write('\\begin{deluxetable*}{lcc}[ht!]\n')
+    file_sources.write('\\tablewidth{290pt}\n')
+    file_sources.write('\\tabletypesize{\scriptsize}\n')
+    file_sources.write(title)
+    file_sources.write(header_text)
+    file_sources.write('\\startdata \n')
+    
+    
+    for id_i,g_rp_i,ewha_i,ewha_error_i in zip(source_id,g_rp,ewha,ewha_error):
+        #spt_i = 
+        delta_ha_i = np.round(calc_delta_ha_for_accretors(g_rp_i,ewha_i),2)
+        file_sources.write(str(id_i)+'& $'+ 
+                           str(np.round(ewha_i,2)) + '\\pm' 
+                           +str(np.round(ewha_error_i,2)) +'$ & $'
+                           +str(delta_ha_i) +'$ \\\ \n')
+    file_sources.write('\\enddata \n')
+    file_sources.write('\\end{deluxetable*}\n')
+    
 #binaries = Table.read('../Catalogs/wdm_binaries.fits')
 #make_table_for_wd(binaries)
 #make_table_wd_ages(binaries)
     
 #age_calibrators = Table.read('../Catalogs/age_calibrators_bayes.fits')
 #make_table_summary_age_calibrators(age_calibrators)
+    
+accretors = Table.read('../Catalogs/literature_search_accretors.fits')
+make_table_accretors(accretors)

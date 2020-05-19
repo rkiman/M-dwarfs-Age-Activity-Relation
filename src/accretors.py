@@ -57,3 +57,22 @@ def def_mask_not_acc(color,ewha):
             return False
     else:
         return True
+    
+def calc_delta_ha_for_accretors(color,ewha):
+    """
+    White, R. J. & Basri, G. 
+    VERY LOW MASS STARS AND BROWN DWARFS IN TAURUS-AURIGA. 
+    Astrophys. J. 582, 1109–1122 (2003).
+    """
+    #If any is nan I cannot make a decision if they are accreating
+    if(~np.isnan(color+ewha)):       
+        if(color<spt_to_g_rp(2.7)):
+            return ewha - 10
+        elif(color<spt_to_g_rp(5.7)):
+            return ewha - 20
+        elif(color<spt_to_g_rp(7.7)):#elif(color>=spt_to_g_rp(5.7)):
+            return ewha - 40
+        else:
+            return np.nan
+    else:
+        return True

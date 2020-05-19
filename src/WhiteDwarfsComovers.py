@@ -13,7 +13,7 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
                         file_name_binaries='wdm_binaries.fits'):
     #Cross-mach m-dwarf sample with white dwarf sample to find all the pairs in
     #a 10 arcmin radius
-    m_dwarfs_pairs,w_dwarfs_pairs,_ = cross_match_to_white_dwarfs(m_dwarfs_not_mg)
+    m_dwarfs_pairs,w_dwarfs_pairs,_=cross_match_to_white_dwarfs(m_dwarfs_not_mg)
     
     #Make space removing tables that are not used anymore
     del m_dwarfs_not_mg
@@ -55,27 +55,29 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
     mask_comovers = mask_comovers_all * (prob_chance_align <= 0.01)
     mask_comp = ~np.isnan(m_dwarfs_pairs['ewha'])
     
-    info = 'Number of m-dwarfs white dwarfs pairs: {}'
-    N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers_all*mask_comp])
-    print(info.format(N))
+    log_file = open('log.txt','a')
     
-    info = 'Number of m-dwarfs with prob of chance alignment > 0.01: {}'
+    info = 'Number of m-dwarfs white dwarfs pairs: {}\n'
+    N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers_all*mask_comp])
+    log_file.write(info.format(N))
+    
+    info = 'Number of m-dwarfs with prob of chance alignment > 0.01: {}\n'
     mask_info = mask_comovers_all * (prob_chance_align > 0.01) * mask_comp
     N = len(np.array(m_dwarfs_pairs['parallax'])[mask_info])
-    print(info.format(N))
+    log_file.write(info.format(N))
     
     info = 'Number of m-dwarfs white dwarfs pairs with prob ' \
-           'of chance alignment <= 0.01: {}'
+           'of chance alignment <= 0.01: {}\n'
     N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers*mask_comp])
-    print(info.format(N))
+    log_file.write(info.format(N))
     
     #Remove nans to calculate ages in the next step.
     mask_nan_teff_logg = ~np.isnan(w_dwarfs_pairs['TeffH']+
                                    w_dwarfs_pairs['loggH'])
     
-    info = 'Number of m-dwarfs white dwarfs pairs I will calculate age for: {}'
+    info='Number of m-dwarfs white dwarfs pairs I will calculate age for: {}\n'
     N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers*mask_nan_teff_logg])
-    print(info.format(N))
+    log_file.write(info.format(N))
     
     #Define the new sample of m-dwarfs that have a white dwarf co-moving
     m_co_movers = m_dwarfs_pairs[mask_comovers*mask_nan_teff_logg]
@@ -132,6 +134,7 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
                w_co_movers['total_age_err_low'], 
                w_co_movers['total_age_err_high'],
                np.zeros(N_final), np.array(['WD' for i in range(N_final)]),
+               m_co_movers['same_star'],
                m_co_movers['source_num'], m_co_movers['source_ref']]
 
     m_co_movers_organized = organize_table_format(columns)

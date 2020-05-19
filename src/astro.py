@@ -157,6 +157,7 @@ def organize_table_format(columns):
               'ewha_error', 'ewha_all', 
               'ewha_error_all', 'lhalbol', 'lhalbol_error', 'age', 
               'age_error_low', 'age_error_high', 'group_num', 'group_name',
+              'same_star',
               'source_num', 'source_ref']
     N = len(labels)
     

@@ -39,8 +39,11 @@ def compile_m_moving_groups_sample(ls_compatible):
                                  parallax+parallax_error)
                        * (parallax/parallax_error > 8))
     
+    log_file = open('log.txt','a')
+    
     n_kin = len(ra[mask_run_banyan])
-    print('Number of not accretors with good kinematics: {}'.format(n_kin))
+    text = 'Number of not accretors with good kinematics: {}\n'
+    log_file.write(text.format(n_kin))
     
     #Run banyan
     result = banyan_sigma(ra=ra[mask_run_banyan],dec=dec[mask_run_banyan], 
@@ -98,9 +101,6 @@ def compile_m_moving_groups_sample(ls_compatible):
     mg_sample['ya_prob'] = prob_ya[mask_membership]
     mg_sample['best_ya'] = np.array([str(x) for x in best_ya[mask_membership]])
     
-    n_mg = len(mg_sample[~np.isnan(mg_sample['ewha'])])
-    print("Number of high like mem: {}".format(n_mg))
-    
     #Create sample of stars that don't belong to a moving group:
     m_dwarfs_not_mg = ls_compatible[mask_run_banyan][~mask_membership]
     if(~os.path.exists('Catalogs/literature_search_not_mg.fits')):
@@ -140,9 +140,17 @@ def compile_m_moving_groups_sample(ls_compatible):
                mg_sample['lhalbol_error'], mg_sample['age']*1e6,
                (mg_sample['age_error']*1e6)/2,(mg_sample['age_error']*1e6)/2, 
                mg_sample['group_num'],mg_sample['group_name'], 
+               mg_sample['same_star'],
                mg_sample['source_num'], mg_sample['source_ref']]
 
     m_dwarfs_mg = organize_table_format(columns)
+    
+    #Remove ARG members that I don't trust
+    m_dwarfs_mg = m_dwarfs_mg[~(m_dwarfs_mg['group_name']=='ARG')]
+    
+    n_mg = len(m_dwarfs_mg[~np.isnan(m_dwarfs_mg['ewha'])])
+    log_file.write("Number of high like mem: {}\n".format(n_mg))
+    
     if(~os.path.exists('Catalogs/literature_search_mg.fits')):
         print('Saving literature_search_mg.fits')
         m_dwarfs_mg.write('Catalogs/literature_search_mg.fits',format='fits')
