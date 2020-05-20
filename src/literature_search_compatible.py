@@ -66,9 +66,6 @@ def select_compatible_measurements(literature_search,same_star,max_order):
                                  compatible,total_comp,order,overlap_not_comp,
                                  total_overlap_comp,total_overlap_not_comp)
     
-    ls_compatible.write('Catalogs/literature_search_gaia_compatible.fits',
-                        format='fits')
-    
     return ls_compatible
     
 def find_repeated_stars(ra,dec):

@@ -78,6 +78,7 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
     info='Number of m-dwarfs white dwarfs pairs I will calculate age for: {}\n'
     N = len(np.array(m_dwarfs_pairs['parallax'])[mask_comovers*mask_nan_teff_logg])
     log_file.write(info.format(N))
+    log_file.flush()
     
     #Define the new sample of m-dwarfs that have a white dwarf co-moving
     m_co_movers = m_dwarfs_pairs[mask_comovers*mask_nan_teff_logg]

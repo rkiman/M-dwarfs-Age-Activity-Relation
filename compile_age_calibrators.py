@@ -42,21 +42,21 @@ else:
     path = 'Catalogs/literature_search_gaia.fits'
     literature_search1 = Table.read(path)
     
+    #Add extinction corrected magnitudes to the sample
+    literature_search1 = src.add_corrected_magnitudes(literature_search1)
+    
     #Remove haew nans, zeros and higher mass dwarfs from the sample. 
     #We don't want them!
     mask_nan = ~np.isnan(np.array(literature_search1['ewha']))
     mask_zeros = np.array(literature_search1['ewha'])!=0
-    g = literature_search1['phot_g_mean_mag']
-    rp = literature_search1['phot_rp_mean_mag']
+    g = literature_search1['g_corr']
+    rp = literature_search1['rp_corr']
     mask_m_dwarf = g-rp > 0.8
     
     literature_search = literature_search1[mask_nan*mask_zeros*mask_m_dwarf]
     n_ls = len(literature_search)
     text = 'Number of stars in the literature search sample: {}\n'
     log_file.write(text.format(n_ls))
-    
-    #Add extinction corrected magnitudes to the sample
-    literature_search = src.add_corrected_magnitudes(literature_search)
    
     #Find repeated stars
     same_star = src.find_repeated_stars(literature_search['ra'],
@@ -68,6 +68,10 @@ else:
     #Select compatible catalogs
     ls_compatible = src.select_compatible_measurements(literature_search,
                                                        same_star,max_order=2)
+    
+    ls_compatible.write('Catalogs/literature_search_gaia_compatible.fits',
+                        format='fits')
+    
     n_comp = len(ls_compatible[~np.isnan(ls_compatible['ewha'])])
     text = 'Number of stars in the compatible sample: {}\n'
     log_file.write(text.format(n_comp))
@@ -99,6 +103,7 @@ age_calibrators = vstack([m_dwarfs_mg,m_dwarfs_wd])
 mask_ha = ~np.isnan(age_calibrators['ewha'])
 n_tot_cal = len(age_calibrators[mask_ha])
 log_file.write('Total number of age calibrators: {}'.format(n_tot_cal))
+log_file.flush()
 
 #Calculate LHalphaLbol
 lhalbol,lhalbol_error = src.calc_lhalbol(age_calibrators['ewha'],

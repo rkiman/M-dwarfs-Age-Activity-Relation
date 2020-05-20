@@ -12,7 +12,7 @@ def identify_accretors(ls_compatible):
     
     #Define mask to distiguis accreating stars according to the ewha
     mask_not_acc = np.ones(N)*np.nan
-    g_rp = ls_compatible['phot_g_mean_mag']-ls_compatible['phot_rp_mean_mag']
+    g_rp = ls_compatible['g_corr']-ls_compatible['rp_corr']
     ewha = ls_compatible['ewha_all']
     mask_not_acc = []
     for x,y in zip(g_rp,ewha):

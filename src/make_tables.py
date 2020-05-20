@@ -4,7 +4,7 @@
 import os
 from astropy.table import Table
 import numpy as np
-from accretors import calc_delta_ha_for_accretors
+from .accretors import calc_delta_ha_for_accretors
 
 def make_table_for_paper_sources(source_num,Ncomp,compatible,total_comp,order,
                                  overlap_not_comp,total_overlap_comp,
@@ -329,5 +329,5 @@ def make_table_accretors(accretors):
 #age_calibrators = Table.read('../Catalogs/age_calibrators_bayes.fits')
 #make_table_summary_age_calibrators(age_calibrators)
     
-accretors = Table.read('../Catalogs/literature_search_accretors.fits')
-make_table_accretors(accretors)
+#accretors = Table.read('../Catalogs/literature_search_accretors.fits')
+#make_table_accretors(accretors)
