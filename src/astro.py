@@ -193,6 +193,6 @@ def calc_number_single_stars(catalog):
     same number in that column then they are the same star.
     '''
     same_star = catalog['same_star']
-    n_single = set(same_star)
+    n_single = len(set(same_star))
     
     return n_single

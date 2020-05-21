@@ -29,3 +29,4 @@ def test_calc_number_single_stars():
     n_single = calc_number_single_stars(test_table)
     
     assert n_single == n_single_true
+
