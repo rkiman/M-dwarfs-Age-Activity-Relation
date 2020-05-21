@@ -25,9 +25,11 @@ def identify_accretors(ls_compatible):
         if(any(mask_not_acc[mask_same_star]==False)):
             mask_not_acc[mask_same_star]=False
     
+    log_file = open('log.txt','a')
     n_acc = len(ls_compatible[~mask_not_acc])
-    print('Number of possible accretors: {}'.format(n_acc))
-            
+    log_file.write('Number of possible accretors: {}'.format(n_acc))
+    log_file.flush()
+        
     return mask_not_acc
 
 

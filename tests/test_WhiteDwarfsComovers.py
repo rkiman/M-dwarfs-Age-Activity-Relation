@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from src.WhiteDwarfsComovers import cross_match_to_white_dwarfs,calc_pca
+import sys
+sys.path.append('../src')
+#from src.WhiteDwarfsComovers import cross_match_to_white_dwarfs,calc_pca
+from WhiteDwarfsComovers import cross_match_to_white_dwarfs,calc_pca
 from astropy.table import Table
 import numpy as np
 
@@ -39,4 +42,4 @@ def test_calc_pca():
     
     assert all(prob_chance_align <= 0.01)
     
-    
+test_calc_pca()
