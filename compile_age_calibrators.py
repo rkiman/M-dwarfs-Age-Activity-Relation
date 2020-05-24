@@ -77,9 +77,13 @@ else:
     ls_compatible.write('Catalogs/literature_search_gaia_compatible.fits',
                         format='fits')
     #Record number of compatible stars
-    n_comp = len(ls_compatible[~np.isnan(ls_compatible['ewha'])])
+    ls_compatible1 = ls_compatible[~np.isnan(ls_compatible['ewha'])]
+    n_comp = len(ls_compatible1)
     text = 'Number of stars in the compatible sample: {}\n'
     log_file.write(text.format(n_comp))
+    n_single = src.calc_number_single_stars(ls_compatible1)
+    text = 'Number of single stars in the compatible sample: {}\n'
+    log_file.write(text.format(n_single))
     log_file.flush()
 
 #Identify possible accretors
@@ -89,8 +93,12 @@ ls_c_acc = ls_compatible[~mask_not_acc]
 ls_c_acc.write('Catalogs/literature_search_accretors.fits',format='fits',
                overwrite=True)
 
-n_not_acc = len(ls_c_not_acc[~np.isnan(ls_c_not_acc['ewha'])])
+ls_c_not_acc1 = ls_c_not_acc[~np.isnan(ls_c_not_acc['ewha'])]
+n_not_acc = len(ls_c_not_acc1)
 log_file.write('Number of stars not accreating: {}\n'.format(n_not_acc))
+n_single = src.calc_number_single_stars(ls_c_not_acc1)
+text = 'Number of single stars in the compatible sample: {}\n'
+log_file.write(text.format(n_single))
 log_file.flush()
 
 #Identify M-dwarfs in moving groups
@@ -107,7 +115,10 @@ age_calibrators = vstack([m_dwarfs_mg,m_dwarfs_wd])
 
 mask_ha = ~np.isnan(age_calibrators['ewha'])
 n_tot_cal = len(age_calibrators[mask_ha])
-log_file.write('Total number of age calibrators: {}'.format(n_tot_cal))
+log_file.write('Total number of age calibrators: {}\n'.format(n_tot_cal))
+n_single = src.calc_number_single_stars(age_calibrators[mask_ha])
+text = 'Total number of single age calibrators: {}\n'
+log_file.write(text.format(n_single))
 log_file.flush()
 
 #Calculate LHalphaLbol

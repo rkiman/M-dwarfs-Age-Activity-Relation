@@ -6,6 +6,7 @@ from astropy.table import Table
 import numpy as np
 from .accretors import calc_delta_ha_for_accretors
 
+
 def make_table_for_paper_sources(source_num,Ncomp,compatible,total_comp,order,
                                  overlap_not_comp,total_overlap_comp,
                                  total_overlap_not_comp):
@@ -89,18 +90,54 @@ def make_table_for_wd(binaries):
     file_sources.write('\\tablewidth{290pt}\n')
     file_sources.write('\\tabletypesize{\scriptsize}\n')
     file_sources.write('\\tablecaption{WD sample. \\label{table:wd_sample}}\n')
-    file_sources.write('\\tablehead{\\colhead{$T_{\\rm eff}$} & \\colhead{$\log (g)$} & \\colhead{$t_{\\rm ms}$(Gyr)} & \\colhead{$t_{\\rm cool}$(Gyr)} & \\colhead{$t_{\\rm tot}$(Gyr)} & \\colhead{$m_{\\rm i}$(M\\textsubscript{\(\odot\)})} & \\colhead{$m_{\\rm f}$(M\\textsubscript{\(\odot\)})}\n}')
+    file_sources.write('\\tablehead{\
+                        \\colhead{$T_{\\rm eff}$}\
+                        & \\colhead{$\log (g)$}\
+                        & \\colhead{$t_{\\rm ms}$(Gyr)}\
+                        & \\colhead{$t_{\\rm cool}$(Gyr)}\
+                        & \\colhead{$t_{\\rm tot}$(Gyr)}\
+                        & \\colhead{$m_{\\rm i}$(M\\textsubscript{\(\odot\)})}\
+                        & \\colhead{$m_{\\rm f}$(M\\textsubscript{\(\odot\)})}\
+                        \n}')
     file_sources.write('\\startdata \n')
     
     for i in rand_idx:
-        teff = '$' + str(np.round(binaries['TeffH'][i],2)) + '\pm ' + str(np.round(binaries['e_TeffH'][i],2)) + '$'
-        logg = '$' + str(np.round(binaries['loggH'][i],2)) + '\pm ' + str(np.round(binaries['e_loggH'][i],2)) + '$'
-        ms = '$' + str(np.round(binaries['ms_age_median'][i]/1e9,2)) + '_{-' + str(np.round(binaries['ms_age_err_low'][i]/1e9,2)) + '}^{+' + str(np.round(binaries['ms_age_err_high'][i]/1e9,2)) + '}$'
-        cool = '$' + str(np.round(binaries['cooling_age_median'][i]/1e9,2)) + '_{-' + str(np.round(binaries['cooling_age_err_low'][i]/1e9,2)) + '}^{+' + str(np.round(binaries['cooling_age_err_high'][i]/1e9,2)) + '}$'
-        tot = '$' + str(np.round(binaries['total_age_median'][i]/1e9,2)) + '_{-' + str(np.round(binaries['total_age_err_low'][i]/1e9,2)) + '}^{+' + str(np.round(binaries['total_age_err_high'][i]/1e9,2)) + '}$'
-        mini = '$' + str(np.round(binaries['initial_mass_median'][i],2)) + '_{-' + str(np.round(binaries['initial_mass_err_low'][i],2)) + '}^{+' + str(np.round(binaries['initial_mass_err_high'][i],2)) + '}$'
-        mfin = '$' + str(np.round(binaries['final_mass_median'][i],2)) + '_{-' + str(np.round(binaries['final_mass_err_low'][i],2)) + '}^{+' + str(np.round(binaries['final_mass_err_high'][i],2)) + '}$'
-        file_sources.write(teff+'&'+logg+'&'+ms+'&'+cool+'&'+tot+'&'+mini+'&'+mfin+'\\\ \n') 
+        #teff
+        val = str(np.round(binaries['TeffH'][i],2))
+        err = str(np.round(binaries['e_TeffH'][i],2))
+        teff = '$' + val + '\pm ' + err + '$'
+        #logg
+        val = str(np.round(binaries['loggH'][i],2))
+        err = str(np.round(binaries['e_loggH'][i],2))
+        logg = '$' + val + '\pm ' + err + '$'
+        #ms age
+        val = str(np.round(binaries['ms_age_median'][i]/1e9,2))
+        err_low = str(np.round(binaries['ms_age_err_low'][i]/1e9,2))
+        err_high = str(np.round(binaries['ms_age_err_high'][i]/1e9,2))
+        ms = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
+        #cool age
+        val = str(np.round(binaries['cooling_age_median'][i]/1e9,2))
+        err_low = str(np.round(binaries['cooling_age_err_low'][i]/1e9,2))
+        err_high = str(np.round(binaries['cooling_age_err_high'][i]/1e9,2))
+        cool = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
+        #tot age
+        val = str(np.round(binaries['total_age_median'][i]/1e9,2))
+        err_low = str(np.round(binaries['total_age_err_low'][i]/1e9,2))
+        err_high = str(np.round(binaries['total_age_err_high'][i]/1e9,2))
+        tot = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
+        #initial mass
+        val = str(np.round(binaries['initial_mass_median'][i],2))
+        err_low = str(np.round(binaries['initial_mass_err_low'][i],2))
+        err_high = str(np.round(binaries['initial_mass_err_high'][i],2))
+        mini = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
+        #final mass
+        val = str(np.round(binaries['final_mass_median'][i],2))
+        err_low = str(np.round(binaries['final_mass_err_low'][i],2))
+        err_high = str(np.round(binaries['final_mass_err_high'][i],2))
+        mfin = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
+        #complete line
+        file_sources.write(teff+'&'+logg+'&'+ms+'&'+cool+'&'+tot+'&'
+                           +mini+'&'+mfin+'\\\ \n') 
 
     file_sources.write('\\enddata \n')
     file_sources.write('\\end{deluxetable*}\n')
@@ -127,13 +164,19 @@ def make_table_wd_ages(binaries):
     file_sources.write('\\tablewidth{290pt}\n')
     file_sources.write('\\tabletypesize{\scriptsize}\n')
     file_sources.write('\\tablecaption{WD sample. \\label{table:wd_sample}}\n')
-    file_sources.write('\\tablehead{\\multicolumn{2}{c}{\\textit{Gaia} source id} & \\colhead{Total age} \\\ M dwarf & White dwarf & (Gyr) \n}')
+    file_sources.write('\\tablehead{\
+                        \\multicolumn{2}{c}{\\textit{Gaia} source id} \
+                        & \\colhead{Total age} \
+                        \\\ M dwarf & White dwarf & (Gyr) \n}')
     file_sources.write('\\startdata \n')
     
     for i in rand_idx:
         source_id_m = '$' + str(np.round(binaries['Source'][i],2)) + '$'
         source_id_wd = '$' + str(np.round(binaries['m_source_id'][i],2)) + '$'
-        tot = '$' + str(np.round(binaries['total_age_median'][i]/1e9,2)) + '_{-' + str(np.round(binaries['total_age_err_low'][i]/1e9,2)) + '}^{+' + str(np.round(binaries['total_age_err_high'][i]/1e9,2)) + '}$'
+        age = str(np.round(binaries['total_age_median'][i]/1e9,2))
+        err_low = str(np.round(binaries['total_age_err_low'][i]/1e9,2))
+        err_high = str(np.round(binaries['total_age_err_high'][i]/1e9,2))
+        tot = '$' + age + '_{-' + err_low + '}^{+' + err_high + '}$'
         file_sources.write(source_id_m+'&'+source_id_wd+'&'+tot+'\\\ \n') 
 
     file_sources.write('\\enddata \n')
@@ -280,14 +323,20 @@ def make_table_accretors(accretors):
     literature search sample using the criterion from 
     White,R.J. & Basri,G. Astrophys. J. 582, 1109–1122 (2003).
     '''
-    mask_nan = ~np.isnan(accretors['ewha']+accretors['ewha_error'])
+    mask_nan = ~np.isnan(accretors['ewha_error'])
     n_acc = 5
-    rand_idx = np.random.randint(0,len(accretors[mask_nan]),n_acc)
+    delta_ha = np.ones(n_acc)*-1
+    while(any(delta_ha<0)):
+        rand_idx = np.random.randint(0,len(accretors[mask_nan]),n_acc)    
+        source_id = accretors['source_id'][mask_nan][rand_idx]
+        g = accretors['g_corr'][mask_nan][rand_idx]
+        rp = accretors['rp_corr'][mask_nan][rand_idx]
+        g_rp = g-rp
+        ewha = accretors['ewha'][mask_nan][rand_idx]
+        ewha_error = accretors['ewha_error'][mask_nan][rand_idx]
+        d = [calc_delta_ha_for_accretors(x,y) for x,y in zip(g_rp,ewha)]
+        delta_ha = np.array([np.round(x,2) for x in d])
     
-    source_id = accretors['source_id'][mask_nan][rand_idx]
-    g_rp = accretors['g_corr'][mask_nan][rand_idx]-accretors['rp_corr'][mask_nan][rand_idx]
-    ewha = accretors['ewha'][mask_nan][rand_idx]
-    ewha_error = accretors['ewha_error'][mask_nan][rand_idx]
     
     dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
     paper = 'Age-Activity Relation for M dwarfs/'
@@ -299,7 +348,7 @@ def make_table_accretors(accretors):
     header_text = '\\tablehead{\
     \\colhead{\\textit{Gaia} source id} \
     & \\colhead{$\\haew$} \
-    & \\colhead{$\\Delta \\haew$} \n}'
+    & \\colhead{$\\Delta \\haew$\\tablenotemark{a}} \n}'
     
     title = '\\tablecaption{Accretors found with the criterion from \
     \\citet{White2003}. \\label{table:accretors}}\n'
@@ -312,22 +361,12 @@ def make_table_accretors(accretors):
     file_sources.write('\\startdata \n')
     
     
-    for id_i,g_rp_i,ewha_i,ewha_error_i in zip(source_id,g_rp,ewha,ewha_error):
-        #spt_i = 
-        delta_ha_i = np.round(calc_delta_ha_for_accretors(g_rp_i,ewha_i),2)
-        file_sources.write(str(id_i)+'& $'+ 
-                           str(np.round(ewha_i,2)) + '\\pm' 
-                           +str(np.round(ewha_error_i,2)) +'$ & $'
-                           +str(delta_ha_i) +'$ \\\ \n')
+    for x,y,z,w in zip(source_id,ewha,ewha_error,delta_ha):
+        file_sources.write(str(x)+'& $'+ 
+                           str(np.round(y,2)) + '\\pm' 
+                           +str(np.round(z,2)) +'$ & $'
+                           +str(w) +'$ \\\ \n')
     file_sources.write('\\enddata \n')
+    file_sources.write('\\tablenotetext{a}{Delta above the $\\haew$ limit.}\n')
     file_sources.write('\\end{deluxetable*}\n')
     
-#binaries = Table.read('../Catalogs/wdm_binaries.fits')
-#make_table_for_wd(binaries)
-#make_table_wd_ages(binaries)
-    
-#age_calibrators = Table.read('../Catalogs/age_calibrators_bayes.fits')
-#make_table_summary_age_calibrators(age_calibrators)
-    
-#accretors = Table.read('../Catalogs/literature_search_accretors.fits')
-#make_table_accretors(accretors)

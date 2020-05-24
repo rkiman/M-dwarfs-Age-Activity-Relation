@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+from .astro import calc_number_single_stars
 
 def identify_accretors(ls_compatible):
     '''
@@ -27,7 +28,10 @@ def identify_accretors(ls_compatible):
     
     log_file = open('log.txt','a')
     n_acc = len(ls_compatible[~mask_not_acc])
-    log_file.write('Number of possible accretors: {}'.format(n_acc))
+    log_file.write('Number of possible accretors: {}\n'.format(n_acc))
+    n_single = calc_number_single_stars(ls_compatible[~mask_not_acc])
+    text = 'Number of single possible accretors: {}\n'
+    log_file.write(text.format(n_single))
     log_file.flush()
         
     return mask_not_acc
@@ -46,7 +50,9 @@ def def_mask_not_acc(color,ewha):
     Astrophys. J. 582, 1109–1122 (2003).
     """
     #If any is nan I cannot make a decision if they are accreating
-    if(~np.isnan(color+ewha)):       
+    if(np.isnan(color+ewha)):  
+        return True
+    else:
         if(color<spt_to_g_rp(2.7)):
             return ewha < 10
         elif(color<spt_to_g_rp(5.7)):
@@ -56,9 +62,8 @@ def def_mask_not_acc(color,ewha):
         elif(color>=spt_to_g_rp(7.7)): #If it is later than M7.7 I don't have
             return True                #any criteria
         else:
-            return False
-    else:
-        return True
+            return True
+        
     
 def calc_delta_ha_for_accretors(color,ewha):
     """
@@ -67,7 +72,9 @@ def calc_delta_ha_for_accretors(color,ewha):
     Astrophys. J. 582, 1109–1122 (2003).
     """
     #If any is nan I cannot make a decision if they are accreating
-    if(~np.isnan(color+ewha)):       
+    if(np.isnan(color+ewha)):
+        return np.nan
+    else:
         if(color<spt_to_g_rp(2.7)):
             return ewha - 10
         elif(color<spt_to_g_rp(5.7)):
@@ -76,5 +83,4 @@ def calc_delta_ha_for_accretors(color,ewha):
             return ewha - 40
         else:
             return np.nan
-    else:
-        return True
+        
