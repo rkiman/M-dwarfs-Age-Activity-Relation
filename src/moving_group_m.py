@@ -8,7 +8,7 @@ from banyan_sigma import banyan_sigma
 from scipy.io.idl import readsav
 from astropy.table import Table
 import os
-from .astro import organize_table_format
+from .astro import organize_table_format,calc_number_single_stars
 
 def compile_m_moving_groups_sample(ls_compatible):
     '''
@@ -20,8 +20,7 @@ def compile_m_moving_groups_sample(ls_compatible):
     #Load reference of known moving groups in Banyan
     mg_ref = Table.read('data/moving_groups_ref.csv',format='csv')
     
-    N = len(ls_compatible)
-    
+    #columns needed in this part of the code
     ra = np.array([float(x) for x in ls_compatible['ra_x']])
     dec = np.array([float(x) for x in ls_compatible['dec_x']])
     pmra = np.array([float(x) for x in ls_compatible['pmra']])
@@ -29,20 +28,26 @@ def compile_m_moving_groups_sample(ls_compatible):
     pmdec = np.array([float(x) for x in ls_compatible['pmdec']])
     pmdec_error = np.array([float(x) for x in ls_compatible['pmdec_error']])
     parallax = np.array([float(x) for x in ls_compatible['parallax']])
-    parallax_error = np.array([float(x) for x in ls_compatible['parallax_error']])
+    parallax_error = [float(x) for x in ls_compatible['parallax_error']]
+    parallax_error = np.array(parallax_error)
     rv = np.array([float(x) for x in ls_compatible['radial_velocity']])
-    rv_error = np.array([float(x) for x in ls_compatible['radial_velocity_error']])
-
+    rv_error = [float(x) for x in ls_compatible['radial_velocity_error']]
+    rv_error = np.array(rv_error)
+    group_name = np.array([str(x) for x in ls_compatible['group_name']])
+    source_id = np.array([str(x) for x in ls_compatible['source_id']])
     
     #Define mask to run banyan correctly
     mask_run_banyan = (~np.isnan(ra+dec+pmra+pmra_error+pmdec+pmdec_error+
                                  parallax+parallax_error)
                        * (parallax/parallax_error > 8))
     
+    #Register how many stars with good kinematics we have. We included a cut
+    #to only have the number of single and compatible stars
     log_file = open('log.txt','a')
-    
-    n_kin = len(ra[mask_run_banyan])
-    text = 'Number of not accretors with good kinematics: {}\n'
+    mask_ha = ~np.isnan(ls_compatible['ewha'])
+    n_kin = calc_number_single_stars(ls_compatible[mask_run_banyan*mask_ha])
+    text = 'Number of single, compatible, not accretors with\
+            good kinematics: {}\n'
     log_file.write(text.format(n_kin))
     
     #Run banyan
@@ -57,48 +62,109 @@ def compile_m_moving_groups_sample(ls_compatible):
     #Results from banyan
     prob_ya = np.array(result['YA_PROB']).reshape(len(result['YA_PROB']),)
     best_ya = np.array(result['BEST_YA']).reshape(len(result['BEST_YA']),)
-    
-    #for i in range(len(prob_ya)):
-    #    if(str(best_ya[i])=='ARG'):
-    #        prob_ya[i] = 0
-            
-    #Mask for high likelihood members accordin to banyan
-    highprob = prob_ya > 0.9
-    
+    best_hyp = np.array(result['BEST_HYP']).reshape(len(result['BEST_HYP']),)
+
     #Get Praesepe members which is not included in banyan yet.
     #Jonathan Gagne run Banyan on this sample for me and here are the results
     path = 'Catalogs/rocio_praesepe_sample.sav'
     #extracting best young asociationg and probability of being member
-    results_pra = readsav(path,verbose=1)
-    #best_ya_bytes = results['out']['best_ya']
-    #best_ya_pra = np.array([x.decode("utf-8") for x in best_ya_bytes])
+    results_pra = readsav(path)
     ya_prob_pra = results_pra['out']['YA_PROB']
-    source_id_pra = results_pra['input']['source_id'][ya_prob_pra>0.9]
+    best_ya_pra = results_pra['out']['BEST_YA']
+    best_hyp_pra = results_pra['out']['BEST_HYP']
+    source_id_pra = results_pra['input']['source_id']
+    
+    #Columns needed for only the good kinematic stars
+    group_run_banyan = group_name[mask_run_banyan]
+    source_id_run_banyan = source_id[mask_run_banyan]
+    
+    #Adjust PRA members with the results from Jonathan's run from Banyan in
+    #PRA
+    prob_ya,best_ya,best_hyp = adjust_pra_members(group_run_banyan,
+                                                  source_id_run_banyan,prob_ya,
+                                                  best_ya,best_hyp,
+                                                  source_id_pra,ya_prob_pra,
+                                                  best_ya_pra,best_hyp_pra)
+    
+    best_ya = np.array([str(x) for x in best_ya])
+    best_hyp = np.array([str(x) for x in best_hyp])
+    
+    #Mask for high likelihood members according to banyan
+    mask_and_nums = get_membership_mask(group_run_banyan,source_id_run_banyan,
+                                        result,prob_ya,best_ya,best_hyp)
+    mask_membership,mem_low,field,uvw_sep_high,good_mem,arg = mask_and_nums
+    
+    #Save fits file with all the stars and their group classification to 
+    #identify new members.
+    all_groups = ls_compatible[mask_run_banyan]
+    all_groups['prob_ya'] = prob_ya
+    all_groups['best_ya'] = best_ya
+    all_groups['best_hyp'] = best_hyp
+    all_groups['mem_low'] = mem_low
+    all_groups['field'] = field
+    all_groups['uvw_sep_high'] = uvw_sep_high
+    all_groups['good_mem'] = good_mem
+    all_groups['arg'] = arg
+    
+    path_mem = 'Catalogs/literature_search_all_groups.fits'
+    if(os.path.exists(path_mem)):
+        os.remove(path_mem)
+    all_groups.write('Catalogs/literature_search_all_groups.fits',
+                     format='fits')
+
+    #Register number of stars identified as members, not members and why
+    mask_ha = ~np.isnan(all_groups['ewha'])
+    subsample = all_groups[(all_groups['mem_low']==1)*mask_ha]
+    n_mem_low = calc_number_single_stars(subsample)
+    subsample = all_groups[(all_groups['field']==1)*mask_ha]
+    n_field = calc_number_single_stars(subsample)
+    subsample = all_groups[(all_groups['uvw_sep_high']==1)*mask_ha]
+    n_uvw_sep_high = calc_number_single_stars(subsample)
+    subsample = all_groups[(all_groups['good_mem']==1)*mask_ha]
+    n_good_mem = calc_number_single_stars(subsample)
+    subsample = all_groups[(all_groups['arg']==1)*mask_ha]
+    n_arg = calc_number_single_stars(subsample)
+    
+    log_file.write('Number of single compatible stars not in moving group\
+                   because the prob of the \
+                   group was too low:{}\n'.format(n_mem_low))
+    log_file.write('Number of single compatible stars not in moving group\
+                   because they were \
+                   classified as field stars:{}\n'.format(n_field))
+    log_file.write('Number of single compatible stars not in moving group\
+                   because they had \
+                   a distance in UVW > 5km/s:{}\n'.format(n_uvw_sep_high))
+    log_file.write('Number of single compatible stars not in moving group\
+                   because they were \
+                   part of argus:{}\n'.format(n_arg))
+    log_file.write('Number of high likelihood members:{}\n'.format(n_good_mem))
+    log_file.flush()
     
     #Mask for PRA members
-    bf_pra = np.array([True if x in source_id_pra else False 
-                       for x in ls_compatible['source_id']])
+    #bf_pra = np.array([True if x in source_id_pra else False 
+    #                   for x in ls_compatible['source_id']])
     
     #Ajust prob for Praesepe members
-    for x,y in zip(source_id_pra,ya_prob_pra[ya_prob_pra>0.9]):
-        mask = ls_compatible['source_id'][mask_run_banyan] == x
-        prob_ya[mask] = y
+    #for x,y in zip(source_id_pra,ya_prob_pra[ya_prob_pra>0.9]):
+    #    mask = ls_compatible['source_id'][mask_run_banyan] == x
+    #    prob_ya[mask] = y
     
     #Making sure the true members in Praesepe have the right age
-    for i in range(N):
-        if(remove(ls_compatible['group_name'][i])=='PRA' and bf_pra[i]):
-            mask_ref = mg_ref['name']=='PRA'
-            ls_compatible['group_name'][i] = 'PRA'
-            ls_compatible['group_num'][i] = mg_ref['group_num'][mask_ref][0]
-            ls_compatible['age'][i] = mg_ref['age'][mask_ref][0]
-            ls_compatible['age_error'][i] = mg_ref['age_error'][mask_ref][0]
+    #for i in range(N):
+    #    if(remove(ls_compatible['group_name'][i])=='PRA' and mask_membership[i]):
+    #        mask_ref = mg_ref['name']=='PRA'
+    #        ls_compatible['group_name'][i] = 'PRA'
+    #        ls_compatible['group_num'][i] = mg_ref['group_num'][mask_ref][0]
+    #        ls_compatible['age'][i] = mg_ref['age'][mask_ref][0]
+    #        ls_compatible['age_error'][i] = mg_ref['age_error'][mask_ref][0]
         
-            
     #Define mask for high likelihood members including praesepe        
-    mask_membership = np.logical_or(highprob,bf_pra[mask_run_banyan])
+    #mask_membership = np.logical_or(highprob,bf_pra[mask_run_banyan])
+
     
+    #Create table with the true members accorsing to Banyan
     mg_sample = ls_compatible[mask_run_banyan][mask_membership]
-    mg_sample['ya_prob'] = prob_ya[mask_membership]
+    #mg_sample['ya_prob'] = prob_ya[mask_membership]
     mg_sample['best_ya'] = np.array([str(x) for x in best_ya[mask_membership]])
     
     #Create sample of stars that don't belong to a moving group:
@@ -119,7 +185,6 @@ def compile_m_moving_groups_sample(ls_compatible):
                 mg_sample['age_error'][i] = mg_ref['age_error'][mask][0]
             elif(mg_sample['group_name'][i]=='PRA'):
                 mg_sample['best_ya'][i] = 'PRA'
-                mg_sample['ya_prob'][i] = np.nan
 
     #Organize table to use in future steps
     columns = [mg_sample['ra'],mg_sample['dec'],mg_sample['source_id'], 
@@ -145,12 +210,6 @@ def compile_m_moving_groups_sample(ls_compatible):
 
     m_dwarfs_mg = organize_table_format(columns)
     
-    #Remove ARG members that I don't trust
-    m_dwarfs_mg = m_dwarfs_mg[~(m_dwarfs_mg['group_name']=='ARG')]
-    
-    n_mg = len(m_dwarfs_mg[~np.isnan(m_dwarfs_mg['ewha'])])
-    log_file.write("Number of high like mem: {}\n".format(n_mg))
-    
     if(~os.path.exists('Catalogs/literature_search_mg.fits')):
         print('Saving literature_search_mg.fits')
         m_dwarfs_mg.write('Catalogs/literature_search_mg.fits',format='fits')
@@ -160,3 +219,56 @@ def compile_m_moving_groups_sample(ls_compatible):
 def remove(string): 
     return string.replace(" ", "")
 
+def adjust_pra_members(group,source_id,prob_ya,best_ya,best_hyp,
+                       source_id_pra,ya_prob_pra,best_ya_pra,best_hyp_pra):
+    for i in range(len(prob_ya)):
+        if(group[i]=='PRA'):
+            mask_pra_i = np.array([int(source_id[i])==int(x) for x in source_id_pra])
+            x = ya_prob_pra[mask_pra_i][0]
+            y = best_ya_pra[mask_pra_i][0]
+            z = best_hyp_pra[mask_pra_i][0]
+            if(np.isnan(x)):
+                prob_ya[i] = np.nan
+                best_ya[i] = np.nan
+                best_hyp[i] = np.nan
+            else:
+                prob_ya[i] = x
+                best_ya[i] = y.decode("utf-8") 
+                best_hyp[i] = z.decode("utf-8") 
+                if(best_ya[i] == 'PRAE'):
+                    best_ya[i] = 'PRA'
+                if(best_hyp[i] == 'PRAE'):
+                    best_hyp[i] = 'PRA'
+    return prob_ya,best_ya,best_hyp
+
+def get_membership_mask(group,source_id,result,prob_ya,best_ya,best_hyp):
+    n_all = len(prob_ya)
+    n_mem_low = np.zeros(n_all)
+    n_field = np.zeros(n_all)
+    n_uvw_sep_high = np.zeros(n_all)
+    n_good_mem = np.zeros(n_all)
+    n_arg = np.zeros(n_all)
+    highprob = []
+    for i in range(len(prob_ya)):   
+        x = prob_ya[i]
+        y = best_ya[i]
+        z = best_hyp[i]
+        if(x > 0.9):
+            error_msg = 'Check why best_ya: {}!= best_hyp {}'.format(y,z)
+            assert y==z, error_msg
+            if(y!='PRA' and result[str.encode(z)]['UVW_SEP'][i]>5):
+                n_uvw_sep_high[i] = 1
+                highprob.append(False)
+            elif(y=='ARG'):
+                n_arg[i] = 1
+                highprob.append(False)
+            else:
+                highprob.append(True)
+                n_good_mem[i] = 1
+        elif(x <= 0.9):
+            highprob.append(False)
+            if(best_hyp[i]=='FIELD'):
+                n_field[i] = 1
+            elif(best_hyp[i]!='FIELD'):
+                n_mem_low[i] = 1
+    return np.array(highprob),n_mem_low,n_field,n_uvw_sep_high,n_good_mem,n_arg

@@ -17,6 +17,7 @@ This main file creates (if they don't exists already, so delete before run if
 they do):
     - 'Catalogs/literature_search_gaia_compatible.fits'
     - 'Catalogs/literature_search_accretors.fits'
+    - 'Catalogs/literature_search_all_groups.fits'
     - 'Catalogs/literature_search_not_mg.fits'
     - 'Catalogs/literature_search_mg.fits'
     - 'Catalogs/wdm_binaries.fits'
@@ -90,6 +91,7 @@ else:
 mask_not_acc = src.identify_accretors(ls_compatible)
 ls_c_not_acc = ls_compatible[mask_not_acc]
 ls_c_acc = ls_compatible[~mask_not_acc]
+
 ls_c_acc.write('Catalogs/literature_search_accretors.fits',format='fits',
                overwrite=True)
 
