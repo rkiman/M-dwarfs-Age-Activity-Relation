@@ -5,7 +5,7 @@ import numpy as np
 from astropy.table import Table
 from astropy.coordinates import SkyCoord
 import astropy.units as u
-from .make_tables import make_table_for_paper_sources
+from .make_tables import make_summary_sources
 
 def select_compatible_measurements(literature_search,max_order):
     '''
@@ -63,9 +63,9 @@ def select_compatible_measurements(literature_search,max_order):
     ls_compatible['ewha_error'][~mask_compatible] = np.nan
     
     Ncomp = len(ls_compatible['ewha'][~np.isnan(ls_compatible['ewha'])])
-    make_table_for_paper_sources(ls_compatible['source_num'],Ncomp,
-                                 compatible,total_comp,order,overlap_not_comp,
-                                 total_overlap_comp,total_overlap_not_comp)
+    make_summary_sources(source_num,Ncomp,
+                         compatible,total_comp,order,overlap_not_comp,
+                         total_overlap_comp,total_overlap_not_comp)
     
     return ls_compatible
     

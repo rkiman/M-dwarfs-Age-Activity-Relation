@@ -7,7 +7,7 @@ import numpy as np
 from .accretors import calc_delta_ha_for_accretors
 
 
-def make_table_for_paper_sources(source_num,Ncomp,compatible,total_comp,order,
+def make_summary_sources(source_num,Ncomp,compatible,total_comp,order,
                                  overlap_not_comp,total_overlap_comp,
                                  total_overlap_not_comp):
 
@@ -15,7 +15,7 @@ def make_table_for_paper_sources(source_num,Ncomp,compatible,total_comp,order,
 
      
     #Set up path to save file
-    dat_path='/Users/rociokiman/Documents/M-dwarfs-Age-Activity-Relation/data/'
+    dat_path='data/'
     if(os.path.exists(dat_path + 'sources_summary.txt')):
         os.remove(dat_path + 'sources_summary.txt')
     file_sources = open(dat_path + 'sources_summary.txt','x')
@@ -191,8 +191,8 @@ def make_table_summary_age_calibrators(age_calibrators):
     '''
 
     mask_ha = ~np.isnan(age_calibrators['ewha'])
-    source_ref_table = Table.read('../data/source_ref.csv')
-    data_compatible = np.loadtxt('../data/sources_summary.txt')
+    source_ref_table = Table.read('data/source_ref.csv')
+    data_compatible = np.loadtxt('data/sources_summary.txt')
 
     dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
     paper = 'Age-Activity Relation for M dwarfs/'
