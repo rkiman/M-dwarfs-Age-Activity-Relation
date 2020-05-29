@@ -7,7 +7,7 @@ from astropy.coordinates import SkyCoord
 import astropy.units as u
 from .make_tables import make_table_for_paper_sources
 
-def select_compatible_measurements(literature_search,same_star,max_order):
+def select_compatible_measurements(literature_search,max_order):
     '''
     Select the catalogs which are first and second order compatible with
     Kiman et al. 2019. from the literature search sample.
@@ -19,6 +19,7 @@ def select_compatible_measurements(literature_search,same_star,max_order):
     ewha = np.array(literature_search['ewha'])
     ewha_err = np.array(literature_search['ewha_error'])
     source_num = np.array(literature_search['source_num'])
+    same_star = np.array(literature_search['same_star'])
       
     #Identify repeated measurements
     mask_idx_to_remove = remove_repeated_measurements(ewha,ewha_err,same_star)
@@ -98,7 +99,7 @@ def remove_repeated_measurements(ewha,ewha_err,same_star):
     '''
     idx = np.arange(len(ewha))
     idx_to_remove = []
-    for x in range(1,int(max(same_star)+1)):
+    for x in range(1,int(np.nanmax(same_star)+1)):
         #Select group of the same star with the mask
         mask = (same_star == x) 
         if(len(ewha[mask])>1):

@@ -3,7 +3,8 @@
 
 import numpy as np
 import sys
-sys.path.append('/Users/rociokiman/Documents/Gaia-Cupid/ActivityAgeRelation/banyan_sigma')
+bpath='/Users/rociokiman/Documents/Gaia-Cupid/ActivityAgeRelation/banyan_sigma'
+sys.path.append(bpath)
 from banyan_sigma import banyan_sigma
 from scipy.io.idl import readsav
 from astropy.table import Table
@@ -46,11 +47,12 @@ def compile_m_moving_groups_sample(ls_compatible):
     log_file = open('log.txt','a')
     mask_ha = ~np.isnan(ls_compatible['ewha'])
     n_kin = calc_number_single_stars(ls_compatible[mask_run_banyan*mask_ha])
-    text = 'Number of single, compatible, not accretors with\
-            good kinematics: {}\n'
+    text = 'Number of single, compatible, not accretors with \
+    good kinematics: {}\n'
     log_file.write(text.format(n_kin))
     
     #Run banyan
+    print('Running Banyan')
     result = banyan_sigma(ra=ra[mask_run_banyan],dec=dec[mask_run_banyan], 
                           pmra=pmra[mask_run_banyan],
                           pmdec=pmdec[mask_run_banyan], 
@@ -80,6 +82,7 @@ def compile_m_moving_groups_sample(ls_compatible):
     
     #Adjust PRA members with the results from Jonathan's run from Banyan in
     #PRA
+    print('Adjusting PRA members')
     prob_ya,best_ya,best_hyp = adjust_pra_members(group_run_banyan,
                                                   source_id_run_banyan,prob_ya,
                                                   best_ya,best_hyp,
@@ -90,8 +93,10 @@ def compile_m_moving_groups_sample(ls_compatible):
     best_hyp = np.array([str(x) for x in best_hyp])
     
     #Mask for high likelihood members according to banyan
+    print('Making mask for members')
     mask_and_nums = get_membership_mask(group_run_banyan,source_id_run_banyan,
                                         result,prob_ya,best_ya,best_hyp)
+    
     mask_membership,mem_low,field,uvw_sep_high,good_mem,arg = mask_and_nums
     
     #Save fits file with all the stars and their group classification to 
@@ -125,16 +130,16 @@ def compile_m_moving_groups_sample(ls_compatible):
     subsample = all_groups[(all_groups['arg']==1)*mask_ha]
     n_arg = calc_number_single_stars(subsample)
     
-    log_file.write('Number of single compatible stars not in moving group\
+    log_file.write('Number of single compatible stars not in moving group \
                    because the prob of the \
                    group was too low:{}\n'.format(n_mem_low))
-    log_file.write('Number of single compatible stars not in moving group\
+    log_file.write('Number of single compatible stars not in moving group \
                    because they were \
                    classified as field stars:{}\n'.format(n_field))
-    log_file.write('Number of single compatible stars not in moving group\
+    log_file.write('Number of single compatible stars not in moving group \
                    because they had \
                    a distance in UVW > 5km/s:{}\n'.format(n_uvw_sep_high))
-    log_file.write('Number of single compatible stars not in moving group\
+    log_file.write('Number of single compatible stars not in moving group \
                    because they were \
                    part of argus:{}\n'.format(n_arg))
     log_file.write('Number of high likelihood members:{}\n'.format(n_good_mem))
@@ -160,11 +165,10 @@ def compile_m_moving_groups_sample(ls_compatible):
         
     #Define mask for high likelihood members including praesepe        
     #mask_membership = np.logical_or(highprob,bf_pra[mask_run_banyan])
-
     
     #Create table with the true members accorsing to Banyan
     mg_sample = ls_compatible[mask_run_banyan][mask_membership]
-    #mg_sample['ya_prob'] = prob_ya[mask_membership]
+    
     mg_sample['best_ya'] = np.array([str(x) for x in best_ya[mask_membership]])
     
     #Create sample of stars that don't belong to a moving group:
@@ -177,14 +181,11 @@ def compile_m_moving_groups_sample(ls_compatible):
     #Correcting groups that don't agree with banyan
     for i in range(len(mg_sample)):
         if(mg_sample['group_name'][i]!=mg_sample['best_ya'][i]):
-            if(mg_sample['group_name'][i]!='PRA'):
-                mask = mg_sample['best_ya'][i] == mg_ref['name']
-                mg_sample['group_name'][i] = mg_ref['name'][mask][0]
-                mg_sample['group_num'][i] = mg_ref['group_num'][mask][0]
-                mg_sample['age'][i] = mg_ref['age'][mask][0]
-                mg_sample['age_error'][i] = mg_ref['age_error'][mask][0]
-            elif(mg_sample['group_name'][i]=='PRA'):
-                mg_sample['best_ya'][i] = 'PRA'
+            mask = mg_sample['best_ya'][i] == mg_ref['name']
+            mg_sample['group_name'][i] = mg_ref['name'][mask][0]
+            mg_sample['group_num'][i] = mg_ref['group_num'][mask][0]
+            mg_sample['age'][i] = mg_ref['age'][mask][0]
+            mg_sample['age_error'][i] = mg_ref['age_error'][mask][0]
 
     #Organize table to use in future steps
     columns = [mg_sample['ra'],mg_sample['dec'],mg_sample['source_id'], 
@@ -223,22 +224,26 @@ def adjust_pra_members(group,source_id,prob_ya,best_ya,best_hyp,
                        source_id_pra,ya_prob_pra,best_ya_pra,best_hyp_pra):
     for i in range(len(prob_ya)):
         if(group[i]=='PRA'):
-            mask_pra_i = np.array([int(source_id[i])==int(x) for x in source_id_pra])
+            mask_pra_i = [int(source_id[i])==int(x) for x in source_id_pra]
+            mask_pra_i = np.array(mask_pra_i)
             x = ya_prob_pra[mask_pra_i][0]
             y = best_ya_pra[mask_pra_i][0]
             z = best_hyp_pra[mask_pra_i][0]
+            #find all the stars with the same gaia id 
+            mask_source_id = [int(source_id[i])==int(x) for x in source_id]
+            mask_source_id = np.array(mask_source_id)
             if(np.isnan(x)):
                 prob_ya[i] = np.nan
                 best_ya[i] = np.nan
                 best_hyp[i] = np.nan
             else:
-                prob_ya[i] = x
-                best_ya[i] = y.decode("utf-8") 
-                best_hyp[i] = z.decode("utf-8") 
+                prob_ya[mask_source_id] = x
+                best_ya[mask_source_id] = y.decode("utf-8") 
+                best_hyp[mask_source_id] = z.decode("utf-8") 
                 if(best_ya[i] == 'PRAE'):
-                    best_ya[i] = 'PRA'
+                    best_ya[mask_source_id] = 'PRA'
                 if(best_hyp[i] == 'PRAE'):
-                    best_hyp[i] = 'PRA'
+                    best_hyp[mask_source_id] = 'PRA'
     return prob_ya,best_ya,best_hyp
 
 def get_membership_mask(group,source_id,result,prob_ya,best_ya,best_hyp):
