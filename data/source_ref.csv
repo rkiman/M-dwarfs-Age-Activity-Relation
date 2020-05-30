@@ -1,0 +1,59 @@
+source_ref,source_num,cite,resolution,ref_link
+Alonso-Floriano 2015,0,\citet{Alonso-Floriano2015},1500,2015A&A...577A.128A
+Ansdell 2015,1,\citet{Ansdell2015},"1000, 1200",2015ApJ...798...41A
+Bayo 2012,2,\citet{Bayo2012},600-11250,2012A&A...547A..80B
+Bochanski 2005,3,\citet{Bochanski2005},Multiple,2005AJ....130.1871B
+Bouy 2009,4,\citet{Bouy2009},Multiple,2009A&A...504..981B
+Cruz 2002,5,\citet{Cruz2002},1400,2002AJ....123.2828C
+Douglas 2014,6,\citet{Douglas2014},"3300, 4000",2014ApJ...795..161D
+Elliott 2016,7,\citet{Elliott2016},"85000, 48000",2016A&A...590A..13E
+Fang 2018,8,\citet{Fang2018},1800,2018MNRAS.476..908F
+Feigelson 2003,9,\citet{Feigelson2003},0,
+Frasca 2018,10,\citet{Frasca2018},"57000, 42000, 21000",2018A&A...612A..96F
+Gaidos 2014,11,\citet{Gaidos2014},~1200,2014MNRAS.443.2561G
+Gizis 1997,12,\citet{Gizis1997},2000,1997PASP..109..849G
+Gizis 2000,13,\citet{Gizis2000},1000,2000AJ....120.1085G
+Gizis 2002,14,\citet{Gizis2002},19000,2002AJ....123.3356G
+Hawley 1996,15,\citet{Hawley1996},2000,1996AJ....112.2799H
+Ivanov 2015,16,\citet{Ivanov2015},~1000,2015A&A...574A..64I
+Jayawardhana 2006,17,\citet{Jayawardhana2006},60000,
+Jeffers 2018,18,\citet{Jeffers2018},"62000, 48000, 40000",2018A&A...614A..76J
+Kiman 2019,19,\citet{Kiman2019},1800,2019AJ....157..231K
+Kraus 2014,20,\citet{Kraus2014},35000,
+Lawson 2002,21,\citet{Lawson2002},0,
+Lepine 2003,22,\citet{Lepine2003},Multiple,2003AJ....125.1598L
+Lepine 2009,23,\citet{Lepine2009},Multiple,2009AJ....137.4109L
+Lepine 2013,24,\citet{Lepine2013},"2000,4000",2013AJ....145..102L
+LG11,25,\citet{lg11},1000,
+Lodieu 2005,26,\citet{Lodieu2005},600,2005A&A...440.1061L
+Lyo 2004,27,\citet{Lyo2004},0,
+Malo 2014,28,\citet{Malo2014},1750,
+Martin 1996,29,\citet{Martin1996},2340,1996A&AS..116..467M
+Mochnacki 2002,30,\citet{Mochnacki2002},Moderate resolution,
+Mohanty 2003,31,\citet{Mohanty2003},31000,2003ApJ...583..451M
+Mohanty 2005,32,\citet{Mohanty2005},"33000, 25000, 19000",
+Murphy 2010,33,\citet{Murphy2010},<7000,
+Newton 2017,34,\citet{Newton2017},3000,2017ApJ...834...85N
+Phan-Bao 2006,35,\citet{Phan-Bao2006},1400,2006A&A...446..515P
+Reid 1995,36,\citet{Reid1995},2000,1995AJ....110.1838R
+Reid 2002,37,\citet{Reid2002},33000,2002AJ....124..519R
+Reid 2007,38,\citet{Reid2007},1300,2007AJ....133.2825R
+Reiners 2007,39,\citet{Reiners2007},31000,2007ApJ...656.1121R
+Reiners 2008,40,\citet{Reiners2008},31000,2008ApJ...684.1390R
+Reiners 2010,41,\citet{Reiners2010},31000,2010ApJ...710..924R
+Riaz 2006,42,\citet{Riaz2006},1750,2006AJ....132..866R
+Riedel 2014,43,\citet{Riedel2014},0,
+Rodriguez 2014,44,\citet{Rodriguez2014},"3000, 7000",
+Schneider 2019,45,\citet{Schneider2019},32000,2019AJ....157..234S
+Shkolnik 2009,46,\citet{Shkolnik2009},60000,2009ApJ...699..649S
+Shkolnik 2011,47,\citet{Shkolnik2011},"4100, 35000, moderate?",
+Shkolnik 2017,48,\citet{Shkolnik2017},"35000, 58000",
+Slesnick 2006,49,\citet{Slesnick2006},1250,2006AJ....131.3016S
+Slesnick 2008,50,\citet{Slesnick2008},1250,2008ApJ...688..377S
+Song 2003,51,\citet{Song2003},0,
+Song 2004,52,\citet{Song2004},0,
+Stauffer 1997,53,\citet{Stauffer1997},44000,1997ApJ...475..604S
+Terrien 2015,54,\citet{Terrien2015},2000,2015ApJS..220...16T
+Tinney 1998,55,\citet{Tinney1998},19000,1998MNRAS.301.1031T
+Torres 2006,56,\citet{Torres2006},"50000, 9000",
+West 2011,57,\citet{West2011},1800,2011AJ....141...97W

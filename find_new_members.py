@@ -20,7 +20,8 @@ text='Number of single stars that were rejected as members with banyan: {}\n'
 log_file.write(text.format(n_rejected))
 
 #Good members were identified with the column good_mem == 1
-mask_mem = all_groups['good_mem'] == 1
+#Also making the sums with the compatible members
+mask_mem = (all_groups['good_mem'] == 1) * (~np.isnan(all_groups['ewha']))
 
 #make a sub table with good members only
 all_mem = all_groups[mask_mem]
@@ -32,6 +33,7 @@ same_star = all_mem['same_star']
 new_mem = []
 seen = []
 change_mem = 0
+same_mem = 0
 #Look over the number same_star which indicates which stars are repeated
 for i in range(len(all_mem)):
     x = same_star[i]
@@ -45,6 +47,8 @@ for i in range(len(all_mem)):
                 new_mem.append(i)
             else:
                 change_mem+=1
+        elif(original_group[i]==banyan_group[i]):
+            same_mem +=1
     else:
         #If the star is repeated I check all of the repeated measurements 
         #at the same time
@@ -67,20 +71,27 @@ for i in range(len(all_mem)):
                     #Banyan classification changed the group.
                     else:
                         assert all(banyan_group_ss==banyan_group_ss[0])
-                        if(any(original_group_ss[original_group_ss!='nan']!=banyan_group_ss[0])):
+                        groups_i = original_group_ss[original_group_ss!='nan']
+                        if(any(groups_i==banyan_group_ss[0])):
+                            same_mem +=1
+                        else:
                             change_mem+=1
                         #The rest kept the classification they had
                         #else:
                         #    print(x)
                         #    for w,y in zip(original_group_ss,banyan_group_ss):
                         #        print(w,y)
+                if(all(original_group_ss==banyan_group_ss)):
+                    same_mem +=1
                         
 #Check that the members counted are single
 assert len(set(same_star[new_mem])) == len(new_mem)
 
 text = 'Number of single members that changed their group with banyan: {}\n'
 log_file.write(text.format(change_mem))
-text = 'Number of single members that are new members: {}\n'
+text = 'Number of single members that did not change their group: {}\n'
+log_file.write(text.format(same_mem))
+text = 'Number of single members that are "new" members: {}\n'
 log_file.write(text.format(len(new_mem)))
 
 
@@ -118,9 +129,9 @@ dec_new_gf = np.array(new_gf['DEJ2000'])
 c_new_gf = SkyCoord(ra=ra_new_gf*u.deg, dec=dec_new_gf*u.deg)
 
 #File to save data from new members
-if(os.path.exists('Catalogs/new_members_data.csv')):
-    os.remove('Catalogs/new_members_data.csv')
-new_members = open('Catalogs/new_members_data.csv','a')
+if(os.path.exists('data/new_members_data.csv')):
+    os.remove('data/new_members_data.csv')
+new_members = open('data/new_members_data.csv','a')
 new_members.write('source_id\tra\tdec\tgroup\tsame_star\treference\n')
 
 tot_match = 0
@@ -145,6 +156,9 @@ for ra_i,dec_i,group_i,source_i,same_star_i,source_id_i in zip(ra_mg,dec_mg,
                           + '\t'+str(same_star_i)+ '\t'+str(source_i) + '\n')
         
 new_members.close()
+
+text = 'Number of single members that were identified by gagne and roeser: {}\n'
+log_file.write(text.format(tot_match))
 
 text = 'Number of single members that are new members and not in gagne: {}\n'
 log_file.write(text.format(tot_new_mem))
@@ -184,7 +198,8 @@ rand_idx = np.random.randint(0,len(new_mem_table),n_mem)
 source_id = new_mem_table['source_id'][rand_idx]
 group = new_mem_table['group'][rand_idx]
 ref = new_mem_table['reference'][rand_idx]
-cite = [source_ref_table['cite'][source_ref_table['source_ref']==x][0] for x in ref]
+reference_source = source_ref_table['source_ref']
+cite = [source_ref_table['cite'][reference_source==x][0] for x in ref]
 
 for x,y,z in zip(source_id,group,cite):
     file_sources.write(str(x)+'& '+ str(y) +'& '+ str(z) +' \\\ \n')
