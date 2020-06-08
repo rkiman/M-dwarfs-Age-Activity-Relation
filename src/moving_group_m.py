@@ -188,7 +188,8 @@ def compile_m_moving_groups_sample(ls_compatible):
             mg_sample['age_error'][i] = mg_ref['age_error'][mask][0]
 
     #Organize table to use in future steps
-    columns = [mg_sample['ra'],mg_sample['dec'],mg_sample['source_id'], 
+    columns = [mg_sample['ra'],mg_sample['dec'],mg_sample['spt'],
+               mg_sample['source_id'], 
                mg_sample['ra_x'],mg_sample['dec_x'],mg_sample['pmra'],
                mg_sample['pmra_error'],mg_sample['pmdec'],
                mg_sample['pmdec_error'],mg_sample['parallax'], 

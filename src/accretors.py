@@ -13,10 +13,10 @@ def identify_accretors(ls_compatible):
     
     #Define mask to distiguis accreating stars according to the ewha
     mask_not_acc = np.ones(N)*np.nan
-    g_rp = ls_compatible['g_corr']-ls_compatible['rp_corr']
+    spt = ls_compatible['spt']
     ewha = ls_compatible['ewha_all']
     mask_not_acc = []
-    for x,y in zip(g_rp,ewha):
+    for x,y in zip(spt,ewha):
         mask_not_acc.append(def_mask_not_acc(x,y))
     mask_not_acc = np.array(mask_not_acc)
         
@@ -43,24 +43,24 @@ def spt_to_g_rp(spt):
     """
     return -0.0036*spt**2 + 0.11*spt + 0.89
 
-def def_mask_not_acc(color,ewha):
+def def_mask_not_acc(spt,ewha):
     """
     White, R. J. & Basri, G. 
     VERY LOW MASS STARS AND BROWN DWARFS IN TAURUS-AURIGA. 
     Astrophys. J. 582, 1109–1122 (2003).
     """
     #If any is nan I cannot make a decision if they are accreating
-    if(np.isnan(color+ewha)):  
+    if(np.isnan(spt+ewha)):  
         return True
     else:
-        if(color<spt_to_g_rp(2.7)):
+        if(spt<2.7):
             return ewha < 10
-        elif(color<spt_to_g_rp(5.7)):
+        elif(spt<5.7):
             return ewha < 20
-        elif(color<spt_to_g_rp(7.7)):#elif(color>=spt_to_g_rp(5.7)):
+        elif(spt<7.7):#elif(color>=spt_to_g_rp(5.7)):
             return ewha < 40
-        elif(color>=spt_to_g_rp(7.7)): #If it is later than M7.7 I don't have
-            return True                #any criteria
+        elif(spt>=7.7): #If it is later than M7.7 I don't have
+            return True #any criteria
         else:
             return True
         

@@ -91,6 +91,7 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
     else:
         #Calculate total age, cooling age, main sequence age, initial mass 
         #and final mass for the white dwarfs
+        print('Calculating ages for white dwarfs')
         result_w_ages = calc_ages_wdm_binaries(w_co_movers)
 
         w_co_movers['ms_age_median'] = result_w_ages[:,0]
@@ -116,7 +117,8 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
     #Organize table format for future steps
     N_final = len(m_co_movers)
     
-    columns = [m_co_movers['ra'], m_co_movers['dec'], m_co_movers['source_id'],
+    columns = [m_co_movers['ra'], m_co_movers['dec'], m_co_movers['spt'],
+               m_co_movers['source_id'],
                m_co_movers['ra_x'], m_co_movers['dec_x'], m_co_movers['pmra'], 
                m_co_movers['pmra_error'], m_co_movers['pmdec'],
                m_co_movers['pmdec_error'], m_co_movers['parallax'],
@@ -124,7 +126,8 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
                m_co_movers['phot_g_mean_flux_error'], 
                m_co_movers['phot_g_mean_mag'],m_co_movers['phot_rp_mean_flux'],
                m_co_movers['phot_rp_mean_flux_error'], 
-               m_co_movers['phot_rp_mean_mag'],m_co_movers['phot_bp_mean_flux'],
+               m_co_movers['phot_rp_mean_mag'],
+               m_co_movers['phot_bp_mean_flux'],
                m_co_movers['phot_bp_mean_flux_error'], 
                m_co_movers['phot_bp_mean_mag'], m_co_movers['g_corr'],
                m_co_movers['rp_corr'], m_co_movers['ewha'], 

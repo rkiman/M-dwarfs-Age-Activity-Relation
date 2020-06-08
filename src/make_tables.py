@@ -5,7 +5,7 @@ import os
 from astropy.table import Table
 import numpy as np
 from .accretors import calc_delta_ha_for_accretors
-
+    
 
 def make_summary_sources(source_num,Ncomp,compatible,total_comp,order,
                                  overlap_not_comp,total_overlap_comp,
@@ -205,11 +205,10 @@ def make_table_summary_age_calibrators(age_calibrators):
     header_text = '\\tablehead{\
     \\colhead{Reference \\tablenotemark{a}} \
     & \\colhead{Spectral} \
-    & \\colhead{$N$ Stars} \
-    & \\colhead{$N$ Stars} \
+    & \\multicolumn{2}{c}{$N$ of M dwarfs} \
     & \\colhead{OC \\tablenotemark{c}} \
     & \\multicolumn{2}{c}{Ages from} \
-    \\\ & Resolution & & Compatible \\tablenotemark{b} \
+    \\\ & Resolution & Total & Compatible \\tablenotemark{b} \
     &  &moving group & white dwarf \n}'
     
     title = '\\tablecaption{Age Calibrators summary. \\label{table:age_cal}}\n'

@@ -14,7 +14,6 @@ The final sample is saved in a folder called Catalogs.
 
 This main file creates (if they don't exists already, so delete before run if
 they do):
-    - 'Catalogs/literature_search_gaia_compatible.fits'
     - 'Catalogs/literature_search_accretors.fits'
     - 'Catalogs/literature_search_all_groups.fits'
     - 'Catalogs/literature_search_not_mg.fits'
@@ -37,6 +36,11 @@ path_compatible = 'Catalogs/literature_search_gaia_compatible.fits'
 
 ls_compatible = Table.read(path_compatible)
 
+#for stars that don't have spt, assing one photometric
+spt_column = src.get_spt(ls_compatible['spt'],
+                         ls_compatible['g_corr']-ls_compatible['rp_corr'])
+ls_compatible['spt'] = spt_column
+
 #Identify possible accretors
 mask_not_acc = src.identify_accretors(ls_compatible)
 ls_c_not_acc = ls_compatible[mask_not_acc]
@@ -55,6 +59,11 @@ log_file.flush()
 
 #Identify M-dwarfs in moving groups
 m_dwarfs_mg,m_dwarfs_not_mg = src.compile_m_moving_groups_sample(ls_c_not_acc)
+log_file.flush()
+
+n_singles = src.calc_number_single_stars(m_dwarfs_not_mg[~np.isnan(not_mg['ewha'])])
+text = 'Number of single stars not in moving groups: {}\n'
+log_file.write(text.format(n_single))
 log_file.flush()
 
 #Identify M-dwarfs co-moving with a White dwarf
@@ -81,6 +90,21 @@ lhalbol,lhalbol_error = src.calc_lhalbol(age_calibrators['ewha'],
 
 age_calibrators['lhalbol'] = lhalbol
 age_calibrators['lhalbol_error'] = lhalbol_error
+
+#Remove weird objects
+ra_weird = [279.9099730555555,279.90995833,279.909973,208.74074035,
+            23.808016111111108]
+dec_weird = [16.387083055555554,16.38711111,16.387083,5.21089823,
+             -7.2142930555555544]
+mask_weird = []
+for ra_i,dec_i in zip(age_calibrators['ra'],age_calibrators['dec']):
+    if(any(np.isclose(ra_i,ra_weird)) and any(np.isclose(dec_i,dec_weird))):
+        mask_weird.append(True)
+    else:
+        mask_weird.append(False)
+mask_weird = np.array(mask_weird)
+
+age_calibrators = age_calibrators[~mask_weird]
 
 #Save sample
 age_calibrators.write('Catalogs/age_calibrators_bayes.fits', overwrite=True)

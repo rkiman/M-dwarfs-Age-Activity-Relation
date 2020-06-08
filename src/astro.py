@@ -2,6 +2,7 @@ import numpy as np
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
+from scipy.interpolate import interp1d
 
 def WISE_id_to_ra_dec(wise_name):
     N = len(wise_name)
@@ -101,54 +102,52 @@ def hstodeg(ra_hs,dec_hs):
             dec.append(c.dec.deg)
     return np.array(ra),np.array(dec)
 
-def calc_lhalbol(ewha,ewha_error,g_rp):
+def calc_lhalbol(ewha,ewha_error,spt):
     chi_douglas2014 = np.array([6.6453, 6.0334, 5.2658, 4.4872, 3.5926, 
                                 2.4768, 1.7363, 1.2057, 0.6122, 0.3522])*1e-5
-    g_rp_kiman2019 = np.array([0.93, 1.01, 1.09, 1.16, 1.23, 1.32, 1.41, 
-                               1.47, 1.57, 1.63])
-    p = np.polyfit(g_rp_kiman2019,chi_douglas2014,4)
+    spt_douglas2014 = np.arange(0,10)
+    f_chi = interp1d(spt_douglas2014,chi_douglas2014)
 
     N = len(ewha)
     lhalbol = np.ones(N)*np.nan 
     lhalbol_err = np.ones(N)*np.nan
     for i in range(N):
-        if((0.8 <= g_rp[i]) and (g_rp[i] <=1.65)):
+        if((0 <= spt[i]) and (spt[i] <= 9)):
             if(~np.isnan(ewha_error[i]+ewha[i])):
                 dist_ewha = np.random.normal(ewha[i],ewha_error[i],2000)
-                dist_lhalbol = dist_ewha*np.polyval(p,g_rp[i])
+                dist_lhalbol = dist_ewha*f_chi(spt[i])
                 lhalbol[i] = np.nanmedian(dist_lhalbol)
                 lhalbol_err[i] = np.nanstd(dist_lhalbol)
             elif(np.isnan(ewha_error[i]) and ~np.isnan(ewha[i])):
-                lhalbol[i] = ewha[i]*np.polyval(p,g_rp[i])
+                lhalbol[i] = ewha[i]*f_chi(spt[i])
     
     return lhalbol,lhalbol_err
 
-def calc_log_lhalbol(ewha,ewha_error,g_rp):
+def calc_log_lhalbol(ewha,ewha_error,spt):
     chi_douglas2014 = np.array([6.6453, 6.0334, 5.2658, 4.4872, 3.5926, 
                                 2.4768, 1.7363, 1.2057, 0.6122, 0.3522])*1e-5
-    g_rp_kiman2019 = np.array([0.93, 1.01, 1.09, 1.16, 1.23, 1.32, 1.41, 
-                               1.47, 1.57, 1.63])
-    p = np.polyfit(g_rp_kiman2019,chi_douglas2014,4)
+    spt_douglas2014 = np.arange(0,10)
+    f_chi = interp1d(spt_douglas2014,chi_douglas2014)
 
     N = len(ewha)
     log_lhalbol = np.ones(N)*np.nan 
     log_lhalbol_err = np.ones(N)*np.nan
     for i in range(N):
-        if((0.8 <= g_rp[i]) and (g_rp[i] <=1.65)):
+        if((0 <= spt[i]) and (spt[i] <= 9)):
             if(~np.isnan(ewha_error[i]+ewha[i])):
                 dist_ewha = np.random.normal(ewha[i],ewha_error[i],2000)
-                dist_log_lhalbol = np.log10(dist_ewha*np.polyval(p,g_rp[i]))
+                dist_log_lhalbol = np.log10(dist_ewha*f_chi(spt[i]))
                 log_lhalbol[i] = np.nanmedian(dist_log_lhalbol)
                 log_lhalbol_err[i] = np.nanstd(dist_log_lhalbol)
             elif(np.isnan(ewha_error[i]) and ~np.isnan(ewha[i])):
-                log_lhalbol[i] = np.log10(ewha[i]*np.polyval(p,g_rp[i]))
+                log_lhalbol[i] = np.log10(ewha[i]*f_chi(spt[i]))
     
     return log_lhalbol,log_lhalbol_err
             
 def organize_table_format(columns):
     
-    labels = ['ra', 'dec', 'gaia_source_id', 'ra_gaia', 'dec_gaia', 'pmra',
-              'pmra_error', 'pmdec', 'pmdec_error', 'parallax', 
+    labels = ['ra', 'dec', 'spt', 'gaia_source_id', 'ra_gaia', 'dec_gaia', 
+              'pmra', 'pmra_error', 'pmdec', 'pmdec_error', 'parallax', 
               'parallax_error', 'phot_g_mean_flux', 'phot_g_mean_flux_error',
               'phot_g_mean_mag', 'phot_rp_mean_flux', 
               'phot_rp_mean_flux_error', 'phot_rp_mean_mag', 
@@ -196,3 +195,17 @@ def calc_number_single_stars(catalog):
     n_single = len(set(same_star))
     
     return n_single
+
+def color_to_spt(color):
+    spt_model = np.linspace(-2,14,100) 
+    g_rp_model = -0.0036*spt_model**2+0.11*spt_model+0.89
+    f = interp1d(g_rp_model, spt_model)
+    return f(color)
+
+def get_spt(spt,g_rp):
+    mask_color = (g_rp > 0.6556) * (g_rp < 1.7244000000000002) * np.isnan(spt)
+    spt_from_color_1 = color_to_spt(g_rp[mask_color])
+    spt_from_color = np.ones(len(g_rp))*np.nan
+    spt_from_color[mask_color] = spt_from_color_1
+    spt_from_color[~np.isnan(spt)] =spt[~np.isnan(spt)]
+    return spt_from_color
