@@ -61,7 +61,8 @@ log_file.flush()
 m_dwarfs_mg,m_dwarfs_not_mg = src.compile_m_moving_groups_sample(ls_c_not_acc)
 log_file.flush()
 
-n_singles = src.calc_number_single_stars(m_dwarfs_not_mg[~np.isnan(not_mg['ewha'])])
+mask_not_mg = ~np.isnan(m_dwarfs_not_mg['ewha'])
+n_singles = src.calc_number_single_stars(m_dwarfs_not_mg[mask_not_mg])
 text = 'Number of single stars not in moving groups: {}\n'
 log_file.write(text.format(n_single))
 log_file.flush()
