@@ -56,7 +56,7 @@ def select_model(lage,log_lhalbol,log_lhalbol_error,mask_good,
                                p0=ini_params,
                                sigma=log_lhalbol_error[mask_good])
     
-    ini_params = np.array([9,-.1,1,-4])
+    ini_params = bpl_ini_p
     popt_broken,pcov=curve_fit(broken_power_law,lage[mask_good],
                                log_lhalbol[mask_good],
                                p0=ini_params,

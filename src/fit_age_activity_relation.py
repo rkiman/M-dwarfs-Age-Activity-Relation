@@ -80,7 +80,7 @@ def lnlike_age_bpl(params,log_age,log_lhalbol,log_lhalbol_error):
     
     model_halpha = fit_halpha_bpl(params,log_age)
     sigma2 = log_lhalbol_error ** 2 
-    if(a0<0 or a0>10.3 or a3>0 or a1>10 or a1 < -10):
+    if(a0<0 or a0>10.3 or a3>100 or a3<-100 or a1>100 or a1 < -100):
         return -np.inf
     else:
         return -0.5 * np.sum((log_lhalbol - model_halpha) ** 2 / sigma2)
@@ -105,7 +105,7 @@ def fit_relation_bpl(mask,log_age,log_lhalbol,
     
     ndim, nwalkers = n_params, 100
 
-    p0 = np.array([ini_params+np.random.rand(n_params)*sigma_random
+    p0 = np.array([ini_params+(np.random.rand(n_params)-0.5)*sigma_random
                    for i in range(nwalkers)])
     
     sampler = emcee.EnsembleSampler(nwalkers,ndim,lnlike_age_bpl, 
@@ -136,7 +136,7 @@ def fit_relation_bpl(mask,log_age,log_lhalbol,
     fig.savefig(path,dpi=300)
     
     return chain,flat_samples
-
+'''
 def lnlike_age_bpl_var(params,log_age,log_lhalbol,log_lhalbol_error):
     
     a0,a1,a2,a3,log_f = params
@@ -144,7 +144,8 @@ def lnlike_age_bpl_var(params,log_age,log_lhalbol,log_lhalbol_error):
     model_halpha = fit_halpha_bpl(np.array([a0,a1,a2,a3]),log_age)
     sigma2 = log_lhalbol_error ** 2 + model_halpha ** 2 * np.exp(2 * log_f)
     
-    if(a0<0 or a0>10.3 or a3>0 or a1>10 or a1 < -10 or a2 < 0 or -10.0 > log_f or log_f > 1.0):
+    if(a0<0 or a0>10.3 or a3>0 or a3<-100 or a1>100 or a1 < -100
+       or a2 < 0 or -10.0 > log_f or log_f > 1.0):
         return -np.inf
     else:
         return -0.5 * np.sum((log_lhalbol - model_halpha) ** 2 / sigma2 + np.log(sigma2))
@@ -181,7 +182,7 @@ def fit_relation_bpl_var(mask,log_age,log_lhalbol,
     
     #labels = ['$a_0$','$a_1$','$a_2$','$a_3$','logf']
     labels = ['$a_0$','$a_1$','$a_2$','$a_3$',r'$\log f$']
-    '''
+
     fig, axes = plt.subplots(3, figsize=(10, 7), sharex=True)
     for i in range(ndim):
         ax = axes[i]
@@ -191,7 +192,7 @@ def fit_relation_bpl_var(mask,log_age,log_lhalbol,
         ax.yaxis.set_label_coords(-0.1, 0.5)
     
     axes[-1].set_xlabel("step number");
-    '''
+
     fig = corner.corner(flat_samples,labels=labels,quantiles=[.16,.50,.84],
                         show_titles=True, title_kwargs={"fontsize": 12})
     dropbox = '/Users/rociokiman/Dropbox (Personal)/Apps/Overleaf'
@@ -199,4 +200,5 @@ def fit_relation_bpl_var(mask,log_age,log_lhalbol,
     fig.savefig(path,dpi=300)
     
     return chain,flat_samples
-
+'''
+#def plot_walkers()
