@@ -75,7 +75,6 @@ def fit_halpha_bpl(params,log_age):
         
 def lnlike_age_bpl(params,log_age,log_lhalbol,log_lhalbol_error):
     
-
     a0,a1,a2,a3 = params
     
     model_halpha = fit_halpha_bpl(params,log_age)
@@ -101,19 +100,29 @@ def fit_relation_bpl(mask,log_age,log_lhalbol,
     ini_params = params.x
     n_params = len(params.x)
     
-    print(ini_params)
+
     
-    ndim, nwalkers = n_params, 100
+    ndim, nwalkers = n_params, 200
 
     p0 = np.array([ini_params+(np.random.rand(n_params)-0.5)*sigma_random
                    for i in range(nwalkers)])
-    
+
     sampler = emcee.EnsembleSampler(nwalkers,ndim,lnlike_age_bpl, 
                                     args=[log_age[mask],log_lhalbol[mask],
                                           log_lhalbol_error[mask]])
-    sampler.run_mcmc(p0, 10000)
+    sampler.run_mcmc(p0, 2000)
     
-    chain = sampler.chain[:,500:,:]
+    chain = sampler.chain[:,1000:,:]
+    flat_samples = chain.reshape((-1,ndim))
+    p0_medians = np.array([np.median(flat_samples[:,x]) for x in range(n_params)])
+    p0_new = np.array([p0_medians+(np.random.rand(n_params)-0.5)*sigma_random
+                       for i in range(nwalkers)])
+
+    sampler.reset()
+
+    sampler.run_mcmc(p0_new, 2000)
+    
+    chain = sampler.chain[:,1000:,:]
     flat_samples = chain.reshape((-1,ndim))
     
     #labels = ['$a_0$','$a_1$','$a_2$','$a_3$','logf']
