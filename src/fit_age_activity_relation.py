@@ -5,6 +5,7 @@ import numpy as np
 import scipy.optimize as op
 import emcee
 import corner
+import matplotlib.pyplot as plt
 
 def west2008(x,a,b,n,l):
     lhalbol = np.ones(len(x))*np.nan
@@ -145,6 +146,22 @@ def fit_relation_bpl(mask,log_age,log_lhalbol,
     fig.savefig(path,dpi=300)
     
     return chain,flat_samples
+
+def plot_walkers(chain_simple,labels=[]):
+    n_params = len(chain_simple[0,0,:])
+    walkers = len(chain_simple[:,0,0])
+    fig, axs = plt.subplots(n_params,1, figsize=(6, 6), facecolor='w', 
+                            edgecolor='k')
+    fig.subplots_adjust(hspace = .5, wspace=.005)
+    axs = axs.ravel()
+    for i in range(n_params):
+        for j in range(walkers):
+            axs[i].plot(chain_simple[j,:,i],'k-',linewidth=.01)
+        if(len(labels)>0):
+            axs[i].set_ylabel(labels[i])
+    plt.tight_layout()
+    plt.show()
+    
 '''
 def lnlike_age_bpl_var(params,log_age,log_lhalbol,log_lhalbol_error):
     

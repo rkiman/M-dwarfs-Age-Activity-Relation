@@ -3,7 +3,6 @@
 
 from astropy.table import Table
 import numpy as np
-
 import src
 from datetime import datetime
 
@@ -56,6 +55,8 @@ log_file.write(text.format(n_single))
 #Select compatible catalogs. ls_compatible is the new literature search 
 #which has all the stars, but contains one column for haew only for the
 #compatible catalogs.
+#This also created the table summary of sources that is going to be used to 
+#create the table for the paper
 ls_compatible2 = src.select_compatible_measurements(literature_search,
                                                     max_order=2)
 ls_compatible = src.check_gaia_match(ls_compatible2)
@@ -72,4 +73,4 @@ text = 'Number of single stars in the compatible sample: {}\n'
 log_file.write(text.format(n_single))
 log_file.flush()
    
-
+print('Done with compatible sample')

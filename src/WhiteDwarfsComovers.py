@@ -13,6 +13,7 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
                         file_name_binaries='wdm_binaries.fits'):
     #Cross-mach m-dwarf sample with white dwarf sample to find all the pairs in
     #a 10 arcmin radius
+    print('Compiling sample of M dwarfs-white dwarfs binaries')
     m_dwarfs_pairs,w_dwarfs_pairs,_=cross_match_to_white_dwarfs(m_dwarfs_not_mg)
     
     #Make space removing tables that are not used anymore

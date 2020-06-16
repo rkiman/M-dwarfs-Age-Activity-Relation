@@ -13,9 +13,10 @@ def get_mask_active_inactive(ewha,color):
     #                       -13428.70983305,5469.77129071,
     #                       -1212.66808967,108.51204825])
     
-    p_inactive = np.array([-22.81938807,108.69676223,-191.72732865,
-                           148.87638458,-43.17475922])
+    #p_inactive = np.array([-22.81938807,108.69676223,-191.72732865,
+    #                       148.87638458,-43.17475922])
 
+    p_inactive = np.array([8.68040602,-29.00879431,32.46846377,-12.28874475])
     #Define a mask for active and inactive stars
     mask_inactive = abs(np.polyval(p_inactive,color)-ewha) < 0.75
     mask_active = ewha - np.polyval(p_inactive,color) >= 0.75

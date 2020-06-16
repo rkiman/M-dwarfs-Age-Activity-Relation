@@ -5,6 +5,7 @@ from astropy.table import Table,vstack
 import numpy as np
 import src
 from datetime import datetime
+import os
 
 '''
 This main file runs code in the src folder to compile the sample of age
@@ -42,6 +43,7 @@ spt_column = src.get_spt(ls_compatible['spt'],
 ls_compatible['spt'] = spt_column
 
 #Identify possible accretors
+print('Identifying accretors')
 mask_not_acc = src.identify_accretors(ls_compatible)
 ls_c_not_acc = ls_compatible[mask_not_acc]
 ls_c_acc = ls_compatible[~mask_not_acc]
@@ -58,6 +60,7 @@ log_file.write(text.format(n_single))
 log_file.flush()
 
 #Identify M-dwarfs in moving groups
+print('Identifying moving group members')
 m_dwarfs_mg,m_dwarfs_not_mg = src.compile_m_moving_groups_sample(ls_c_not_acc)
 log_file.flush()
 
@@ -67,6 +70,23 @@ text = 'Number of single stars not in moving groups: {}\n'
 log_file.write(text.format(n_single))
 log_file.flush()
 
+#Remove stars close to PRA area because is very crouded and not good to find
+#white dwarfs binaries
+ref_groups = Table.read('data/moving_groups_ref.csv')
+pra_num = ref_groups['group_num'][ref_groups['name']=='PRA'][0]
+m_dwarfs_not_mg = m_dwarfs_not_mg[m_dwarfs_not_mg['group_num']!=pra_num]
+
+mask_not_mg = ~np.isnan(m_dwarfs_not_mg['ewha'])
+n_singles = src.calc_number_single_stars(m_dwarfs_not_mg[mask_not_mg])
+text = 'Number of single stars not in moving groups without PRA: {}\n'
+log_file.write(text.format(n_single))
+log_file.flush()
+
+if(~os.path.exists('Catalogs/literature_search_not_mg.fits')):
+    print('Saving literature_search_not_mg.fits')
+    m_dwarfs_not_mg.write('Catalogs/literature_search_not_mg.fits',
+                          format='fits')
+        
 #Identify M-dwarfs co-moving with a White dwarf
 m_dwarfs_wd = src.compile_m_wd_sample(m_dwarfs_not_mg)
 log_file.flush()
@@ -84,10 +104,10 @@ log_file.write(text.format(n_single))
 log_file.flush()
 
 #Calculate LHalphaLbol
+print('Calculating Lhalbol')
 lhalbol,lhalbol_error = src.calc_lhalbol(age_calibrators['ewha'],
                                          age_calibrators['ewha_error'],
-                                         age_calibrators['g_corr']-
-                                         age_calibrators['rp_corr'])
+                                         age_calibrators['spt'])
 
 age_calibrators['lhalbol'] = lhalbol
 age_calibrators['lhalbol_error'] = lhalbol_error
@@ -108,6 +128,8 @@ mask_weird = np.array(mask_weird)
 age_calibrators = age_calibrators[~mask_weird]
 
 #Save sample
-age_calibrators.write('Catalogs/age_calibrators_bayes.fits', overwrite=True)
-
+print('Saving age calibrators sample')
+age_calibrators.write('Catalogs/age_calibrators_bayes_not_clean.fits', 
+                      overwrite=True)
+print('Done')
 

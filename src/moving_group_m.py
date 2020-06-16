@@ -173,10 +173,6 @@ def compile_m_moving_groups_sample(ls_compatible):
     
     #Create sample of stars that don't belong to a moving group:
     m_dwarfs_not_mg = ls_compatible[mask_run_banyan][~mask_membership]
-    if(~os.path.exists('Catalogs/literature_search_not_mg.fits')):
-        print('Saving literature_search_not_mg.fits')
-        m_dwarfs_not_mg.write('Catalogs/literature_search_not_mg.fits',
-                              format='fits')
     
     #Correcting groups that don't agree with banyan
     for i in range(len(mg_sample)):
