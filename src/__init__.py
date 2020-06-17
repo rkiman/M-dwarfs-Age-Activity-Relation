@@ -16,3 +16,4 @@ from .cross_validation import *
 from .accretors import *
 from .model_selection import *
 from .check_gaia_match import *
+from .auto_corr_time import *
