@@ -65,23 +65,21 @@ def fit_relation_bpl(mask,log_age,log_lhalbol,
     sampler = emcee.EnsembleSampler(nwalkers,ndim,lnlike_age_bpl, 
                                     args=[log_age[mask],log_lhalbol[mask],
                                           log_lhalbol_error[mask]])
-    '''
+    
+    print('Running burn in')
     p,_,_ = sampler.run_mcmc(p0, 2000)
     
     #Take medians of the positions of each walkers to initialize again
-    p_median = 
+    chain = sampler.chain[:,:,:]
+    flat_samples = chain.reshape((-1,ndim))
     p0_medians = np.array([np.median(flat_samples[:,x]) for x in range(n_params)])
     p0_new = np.array([p0_medians+(np.random.rand(n_params)-0.5)*sigma_random
                        for i in range(nwalkers)])
     
     sampler.reset()
-
-    #Burn in from the new positions
-    p,_,_ = sampler.run_mcmc(p0_new, 2000)
-    '''
     
     print('Running mcmc to calculate auto-correlation time')
-    p,_,_ = sampler.run_mcmc(p0, 100000)
+    p,_,_ = sampler.run_mcmc(p0_new, 100000)
     chain = sampler.chain
     autoc_time = calc_autocorrelation_time(chain,name_file_auto_corr)
     sampler.reset()
