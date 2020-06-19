@@ -10,7 +10,7 @@ from .ages_whitedwarfs import calc_ages_wdm_binaries
 from .astro import organize_table_format
 
 def compile_m_wd_sample(m_dwarfs_not_mg,
-                        file_name_binaries='wdm_binaries.fits'):
+                        file_name_binaries='wdm_binaries_not_clean.fits'):
     #Cross-mach m-dwarf sample with white dwarf sample to find all the pairs in
     #a 10 arcmin radius
     print('Compiling sample of M dwarfs-white dwarfs binaries')

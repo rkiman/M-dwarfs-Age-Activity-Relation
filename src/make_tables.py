@@ -76,6 +76,38 @@ def make_table_for_wd(binaries):
     Makes latex table with the summary of the white dwarfs values calculated
     with wdwarfdate.
     '''
+    os.remove('data/wdm_co_movers_full.csv')
+    wdm_table = Table()
+    wdm_table['source_id'] = binaries['Source']
+    wdm_table['TeffH'] = binaries['TeffH']
+    wdm_table['e_TeffH'] = binaries['e_TeffH']
+    wdm_table['loggH'] = binaries['loggH']
+    wdm_table['e_loggH'] = binaries['e_loggH']
+    wdm_table['ms_age_median_yr'] = binaries['ms_age_median']
+    wdm_table['ms_age_err_low_yr'] = binaries['ms_age_err_low']
+    wdm_table['ms_age_err_high_yr'] = binaries['ms_age_err_high']
+    wdm_table['cooling_age_median_yr'] = binaries['cooling_age_median']
+    wdm_table['cooling_age_err_low_yr'] = binaries['cooling_age_err_low']
+    wdm_table['cooling_age_err_high_yr'] = binaries['cooling_age_err_high']
+    wdm_table['total_age_median_yr'] = binaries['total_age_median']
+    wdm_table['total_age_err_low_yr'] = binaries['total_age_err_low']
+    wdm_table['total_age_err_high_yr'] = binaries['total_age_err_high']
+    wdm_table['initial_mass_median'] = binaries['initial_mass_median']
+    wdm_table['initial_mass_err_low'] = binaries['initial_mass_err_low']
+    wdm_table['initial_mass_err_high'] = binaries['initial_mass_err_high']
+    wdm_table['final_mass_median'] = binaries['final_mass_median']
+    wdm_table['final_mass_err_low'] = binaries['final_mass_err_low']
+    wdm_table['final_mass_err_high'] = binaries['final_mass_err_high']
+    wdm_table.write('data/wdm_co_movers_full.csv',format='csv')
+
+    os.remove('data/wdm_co_movers_ages.csv')
+    wdm_table = Table()
+    wdm_table['source_id_m'] = binaries['m_source_id']
+    wdm_table['source_id_wd'] = binaries['Source']
+    wdm_table['total_age_median_yr'] = binaries['total_age_median']
+    wdm_table['total_age_err_low_yr'] = binaries['total_age_err_low']
+    wdm_table['total_age_err_high_yr'] = binaries['total_age_err_high']
+    wdm_table.write('data/wdm_co_movers_ages.csv',format='csv')
     
     dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
     paper = 'wdwarfdate/'
@@ -86,12 +118,13 @@ def make_table_for_wd(binaries):
     rand_idx = np.random.randint(0,len(binaries),n_wd)
 
     #Header
-    file_sources.write('\\begin{deluxetable*}{ccccccc}[ht!]\n')
+    file_sources.write('\\begin{deluxetable*}{cccccccc}[ht!]\n')
     file_sources.write('\\tablewidth{290pt}\n')
     file_sources.write('\\tabletypesize{\scriptsize}\n')
     file_sources.write('\\tablecaption{WD sample. \\label{table:wd_sample}}\n')
     file_sources.write('\\tablehead{\
-                        \\colhead{$T_{\\rm eff}$}\
+                        \\colhead{\\textit{Gaia} source id}\
+                        &\\colhead{$T_{\\rm eff}$}\
                         & \\colhead{$\log (g)$}\
                         & \\colhead{$t_{\\rm ms}$(Gyr)}\
                         & \\colhead{$t_{\\rm cool}$(Gyr)}\
@@ -102,6 +135,8 @@ def make_table_for_wd(binaries):
     file_sources.write('\\startdata \n')
     
     for i in rand_idx:
+        #source id
+        source_id_i = str(binaries['Source'][i])
         #teff
         val = str(np.round(binaries['TeffH'][i],2))
         err = str(np.round(binaries['e_TeffH'][i],2))
@@ -136,8 +171,8 @@ def make_table_for_wd(binaries):
         err_high = str(np.round(binaries['final_mass_err_high'][i],2))
         mfin = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
         #complete line
-        file_sources.write(teff+'&'+logg+'&'+ms+'&'+cool+'&'+tot+'&'
-                           +mini+'&'+mfin+'\\\ \n') 
+        file_sources.write(source_id_i +'&'+ teff+'&'+logg+'&'+ms+'&'+cool+'&'
+                           +tot+'&'+mini+'&'+mfin+'\\\ \n') 
 
     file_sources.write('\\enddata \n')
     file_sources.write('\\end{deluxetable*}\n')
@@ -171,8 +206,8 @@ def make_table_wd_ages(binaries):
     file_sources.write('\\startdata \n')
     
     for i in rand_idx:
-        source_id_m = '$' + str(np.round(binaries['Source'][i],2)) + '$'
-        source_id_wd = '$' + str(np.round(binaries['m_source_id'][i],2)) + '$'
+        source_id_m = '$' + str(np.round(binaries['m_source_id'][i],2)) + '$'
+        source_id_wd = '$' + str(np.round(binaries['Source'][i],2)) + '$'
         age = str(np.round(binaries['total_age_median'][i]/1e9,2))
         err_low = str(np.round(binaries['total_age_err_low'][i]/1e9,2))
         err_high = str(np.round(binaries['total_age_err_high'][i]/1e9,2))
@@ -322,18 +357,34 @@ def make_table_accretors(accretors):
     literature search sample using the criterion from 
     White,R.J. & Basri,G. Astrophys. J. 582, 1109–1122 (2003).
     '''
-    mask_nan = ~np.isnan(accretors['ewha_error'])
     n_acc = 5
+    
+    if(os.path.exists('data/possible_accretors.csv')):
+        os.remove('data/possible_accretors.csv')  
+    table_acc = Table()
+    table_acc['source_id'] = accretors['source_id']
+    table_acc['spt'] = accretors['spt']
+    table_acc['ewha'] = accretors['ewha_all']
+    table_acc['ewha_error'] = accretors['ewha_error_all']
+    d=[calc_delta_ha_for_accretors(x,y) for x,y in zip(table_acc['spt'],
+                                                       table_acc['ewha'])]
+    delta_ha = np.array([np.round(x,2) for x in d])
+    table_acc['delta_ha'] = delta_ha
+    table_acc['same_star'] = accretors['same_star']
+
+    mask_delta = delta_ha >= 0
+    assert all([x in table_acc['same_star'][mask_delta] for x in table_acc['same_star'][~mask_delta]])
+    table_acc = table_acc[mask_delta]
+    table_acc.write('data/possible_accretors.csv',format='csv')
+        
     delta_ha = np.ones(n_acc)*-1
     while(any(delta_ha<0)):
-        rand_idx = np.random.randint(0,len(accretors[mask_nan]),n_acc)    
-        source_id = accretors['source_id'][mask_nan][rand_idx]
-        g = accretors['g_corr'][mask_nan][rand_idx]
-        rp = accretors['rp_corr'][mask_nan][rand_idx]
-        g_rp = g-rp
-        ewha = accretors['ewha'][mask_nan][rand_idx]
-        ewha_error = accretors['ewha_error'][mask_nan][rand_idx]
-        d = [calc_delta_ha_for_accretors(x,y) for x,y in zip(g_rp,ewha)]
+        rand_idx = np.random.randint(0,len(accretors),n_acc)    
+        source_id = accretors['source_id'][rand_idx]
+        spt = accretors['spt'][rand_idx]
+        ewha = accretors['ewha_all'][rand_idx]
+        ewha_error = accretors['ewha_error_all'][rand_idx]
+        d = [calc_delta_ha_for_accretors(x,y) for x,y in zip(spt,ewha)]
         delta_ha = np.array([np.round(x,2) for x in d])
     
     
@@ -346,13 +397,14 @@ def make_table_accretors(accretors):
     #Header
     header_text = '\\tablehead{\
     \\colhead{\\textit{Gaia} source id} \
+    & \\colhead{SpT} \
     & \\colhead{$\\haew$} \
     & \\colhead{$\\Delta \\haew$\\tablenotemark{a}} \n}'
     
     title = '\\tablecaption{Accretors found with the criterion from \
     \\citet{White2003}. \\label{table:accretors}}\n'
     
-    file_sources.write('\\begin{deluxetable*}{lcc}[ht!]\n')
+    file_sources.write('\\begin{deluxetable*}{lccc}[ht!]\n')
     file_sources.write('\\tablewidth{290pt}\n')
     file_sources.write('\\tabletypesize{\scriptsize}\n')
     file_sources.write(title)
@@ -360,8 +412,9 @@ def make_table_accretors(accretors):
     file_sources.write('\\startdata \n')
     
     
-    for x,y,z,w in zip(source_id,ewha,ewha_error,delta_ha):
-        file_sources.write(str(x)+'& $'+ 
+    for x,s,y,z,w in zip(source_id,spt,ewha,ewha_error,delta_ha):
+        file_sources.write(str(x) + 
+                           'M'+str(s)+'& $'+ 
                            str(np.round(y,2)) + '\\pm' 
                            +str(np.round(z,2)) +'$ & $'
                            +str(w) +'$ \\\ \n')

@@ -37,11 +37,6 @@ path_compatible = 'Catalogs/literature_search_gaia_compatible.fits'
 
 ls_compatible = Table.read(path_compatible)
 
-#for stars that don't have spt, assing one photometric
-spt_column = src.get_spt(ls_compatible['spt'],
-                         ls_compatible['g_corr']-ls_compatible['rp_corr'])
-ls_compatible['spt'] = spt_column
-
 #Identify possible accretors
 print('Identifying accretors')
 mask_not_acc = src.identify_accretors(ls_compatible)
