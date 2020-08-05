@@ -15,17 +15,17 @@ def test_WISE_id_to_ra_dec():
     
 def test_calc_number_single_stars():
     test_table = Table()
-    same_star_single = np.array([1, 2, 3, 4, 5, 6])
+    star_index_single = np.array([1, 2, 3, 4, 5, 6])
     n_nan = 8
-    n_single_true = len(same_star_single) + n_nan
-    same_star = []
-    for x in same_star_single:
+    n_single_true = len(star_index_single) + n_nan
+    star_index = []
+    for x in star_index_single:
         n = np.random.randint(1,5)
         for i in range(n):
-            same_star.append(x)
+            star_index.append(x)
     for i in range(n_nan):
-        same_star.append(np.nan)
-    test_table['same_star'] = np.array(same_star)
+        star_index.append(np.nan)
+    test_table['star_index'] = np.array(star_index)
     n_single = calc_number_single_stars(test_table)
     
     assert n_single == n_single_true
