@@ -43,7 +43,7 @@ def make_summary_sources(source_num,Ncomp,compatible,total_comp,order,
                 order_i = 0
             else:
                 order_i = int(order[mask][0])
-            
+
             file_sources.write(str(source_ref_table['source_num'][i]) + '\t' + 
                                str(n_i) +'\t'+ str(n_overlap_i) + '\t' + 
                                str(n_compatible_i) + '\t' + 
@@ -114,7 +114,7 @@ def make_table_for_wd(binaries):
     os.remove(dropbox_path + paper + 'wd_summary.tex')
     file_sources = open(dropbox_path + paper + 'wd_summary.tex','x')
     
-    n_wd = 5
+    n_wd = 10
     rand_idx = np.random.randint(0,len(binaries),n_wd)
 
     #Header
@@ -191,14 +191,14 @@ def make_table_wd_ages(binaries):
         os.remove(dropbox_path + paper + 'wd_ages.tex')
     file_sources = open(dropbox_path + paper + 'wd_ages.tex','x')
     
-    n_wd = 5
+    n_wd = 10
     rand_idx = np.random.randint(0,len(binaries),n_wd)
 
     #Header
     file_sources.write('\\begin{deluxetable*}{ccc}[ht!]\n')
     file_sources.write('\\tablewidth{290pt}\n')
     file_sources.write('\\tabletypesize{\scriptsize}\n')
-    file_sources.write('\\tablecaption{WD sample. \\label{table:wd_sample}}\n')
+    file_sources.write('\\tablecaption{Ages for the white dwarfs co-moving with an M dwarf. \\label{table:wd_sample}}\n')
     file_sources.write('\\tablehead{\
                         \\multicolumn{2}{c}{\\textit{Gaia} source id} \
                         & \\colhead{Total age} \
@@ -262,6 +262,8 @@ def make_table_summary_age_calibrators(age_calibrators):
     
     for x,y,z in zip(source_ref_table['source_num'],source_ref_table['cite'],
                      source_ref_table['resolution']):
+        if(x==25):
+            y='LG11'+'\\tablenotemark{d}'
         mask_source = age_calibrators['source_num'] == x
         mask_source_2 = data_compatible[:,0] == x
         mask_wd = age_calibrators['group_num'] == 0
@@ -347,6 +349,9 @@ def make_table_summary_age_calibrators(age_calibrators):
     file_sources.write('\\tablenotetext{c}{Order of compatibility. Order $1$\
                        is compatible with \\citet{Kiman2019}. Order $2$ is \
                        compatible with at least one order $1$ catalog.}\n')
+    file_sources.write('\\tablenotetext{d}{\citet{Lepine2013,Gaidos2014} with \
+                       additional data observed in \
+                       an identical manner.}\n')
     file_sources.write('\\end{deluxetable*}\n')
 
     return 0
@@ -357,7 +362,7 @@ def make_table_accretors(accretors):
     literature search sample using the criterion from 
     White,R.J. & Basri,G. Astrophys. J. 582, 1109–1122 (2003).
     '''
-    n_acc = 5
+    n_acc = 10
     
     if(os.path.exists('data/possible_accretors.csv')):
         os.remove('data/possible_accretors.csv')  
@@ -370,15 +375,17 @@ def make_table_accretors(accretors):
                                                        table_acc['ewha'])]
     delta_ha = np.array([np.round(x,2) for x in d])
     table_acc['delta_ha'] = delta_ha
-    table_acc['same_star'] = accretors['same_star']
+    table_acc['star_index'] = accretors['star_index']
 
     mask_delta = delta_ha >= 0
-    assert all([x in table_acc['same_star'][mask_delta] for x in table_acc['same_star'][~mask_delta]])
+    assert all([x in table_acc['star_index'][mask_delta] for x in table_acc['star_index'][~mask_delta]])
     table_acc = table_acc[mask_delta]
     table_acc.write('data/possible_accretors.csv',format='csv')
         
     delta_ha = np.ones(n_acc)*-1
-    while(any(delta_ha<0)):
+    spt = np.ones(n_acc)*-1
+    ewha_error = np.ones(n_acc)*np.nan
+    while((any(delta_ha<0) or any(np.isnan(ewha_error)) or any(spt<0))):
         rand_idx = np.random.randint(0,len(accretors),n_acc)    
         source_id = accretors['source_id'][rand_idx]
         spt = accretors['spt'][rand_idx]
@@ -401,7 +408,7 @@ def make_table_accretors(accretors):
     & \\colhead{$\\haew$} \
     & \\colhead{$\\Delta \\haew$\\tablenotemark{a}} \n}'
     
-    title = '\\tablecaption{Accretors found with the criterion from \
+    title = '\\tablecaption{Possible accretors found with the criterion from \
     \\citet{White2003}. \\label{table:accretors}}\n'
     
     file_sources.write('\\begin{deluxetable*}{lccc}[ht!]\n')
@@ -413,8 +420,8 @@ def make_table_accretors(accretors):
     
     
     for x,s,y,z,w in zip(source_id,spt,ewha,ewha_error,delta_ha):
-        file_sources.write(str(x) + 
-                           'M'+str(s)+'& $'+ 
+        file_sources.write(str(x) +' &'+
+                           'M'+str(np.round(s,1))+' & $'+ 
                            str(np.round(y,2)) + '\\pm' 
                            +str(np.round(z,2)) +'$ & $'
                            +str(w) +'$ \\\ \n')

@@ -19,16 +19,16 @@ def select_compatible_measurements(literature_search,max_order):
     ewha = np.array(literature_search['ewha'])
     ewha_err = np.array(literature_search['ewha_error'])
     source_num = np.array(literature_search['source_num'])
-    same_star = np.array(literature_search['same_star'])
+    star_index = np.array(literature_search['star_index'])
       
     #Identify repeated measurements
-    mask_idx_to_remove = remove_repeated_measurements(ewha,ewha_err,same_star)
+    mask_idx_to_remove = remove_repeated_measurements(ewha,ewha_err,star_index)
     
     #Using the repeated stars identify compatible catalogs
     mask_kiman = source_ref_table['source_ref'] == 'Kiman 2019'
     idx_kiman = source_ref_table['source_num'][mask_kiman][0]
     
-    res = find_compatible_catalogs(idx_kiman,source_num_ref,same_star,
+    res = find_compatible_catalogs(idx_kiman,source_num_ref,star_index,
                                    source_num,ewha,max_order)
     compatible = res[0]
     prob = res[1]
@@ -72,11 +72,11 @@ def select_compatible_measurements(literature_search,max_order):
 def find_repeated_stars(ra,dec):
     '''
     Finds repeated stars and assigns them the same number in the array 
-    same_star. The number starts at 1. Stars with same_star = 0 are singles.
+    star_index. The number starts at 1. Stars with star_index = 0 are singles.
     The stars are consider the same if they are closer than 2arcsec.
     '''
     Ntot = len(ra)
-    same_star = np.zeros(Ntot)
+    star_index = np.zeros(Ntot)
     c_all = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
     dummy = 1
     print('Finding repeated stars:')
@@ -86,12 +86,12 @@ def find_repeated_stars(ra,dec):
         c1 = SkyCoord(ra=ra[i]*u.deg, dec=dec[i]*u.deg)
         separation = c1.separation(c_all).arcsec
         mask_close = separation < 2
-        if(len(ra[mask_close])>1 and any(same_star[mask_close]==0)):
-            same_star[mask_close] = dummy
+        if(len(ra[mask_close])>1 and any(star_index[mask_close]==0)):
+            star_index[mask_close] = dummy
             dummy+=1
-    return same_star
+    return star_index
 
-def remove_repeated_measurements(ewha,ewha_err,same_star):
+def remove_repeated_measurements(ewha,ewha_err,star_index):
     '''
     There are several stars repeated between the different catalogs, but
     some of the haew are exactly the same. This doesn't contribute to my 
@@ -99,9 +99,9 @@ def remove_repeated_measurements(ewha,ewha_err,same_star):
     '''
     idx = np.arange(len(ewha))
     idx_to_remove = []
-    for x in range(1,int(np.nanmax(same_star)+1)):
+    for x in range(1,int(np.nanmax(star_index)+1)):
         #Select group of the same star with the mask
-        mask = (same_star == x) 
+        mask = (star_index == x) 
         if(len(ewha[mask])>1):
             #Select the ewha of the repeated star
             ewha_mask = np.round(ewha[mask],3)
@@ -126,10 +126,10 @@ def remove_repeated_measurements(ewha,ewha_err,same_star):
                                    else False for x in idx])
     return mask_idx_to_remove
 
-def find_compatible_catalogs(idx_kiman,source_num_ref,same_star,source_num,
+def find_compatible_catalogs(idx_kiman,source_num_ref,star_index,source_num,
                              ewha,max_order):
     
-    res = calc_compatible_matrix(source_num_ref,same_star,source_num,ewha)
+    res = calc_compatible_matrix(source_num_ref,star_index,source_num,ewha)
     matrix_prob,matrix_prob_all,ewha_i,ewha_j = res    
     
     N_ref = len(source_num_ref)
@@ -192,7 +192,7 @@ def find_compatible_catalogs(idx_kiman,source_num_ref,same_star,source_num,
             total_overlap_comp,total_overlap_not_comp]
 
 
-def calc_compatible_matrix(source_num_ref,same_star,source_num,ewha):
+def calc_compatible_matrix(source_num_ref,star_index,source_num,ewha):
     '''
     Calculates two matrices: 
         -matrix_prob_all is a (N,N) matrix where N is the number of catalogs 
@@ -213,9 +213,9 @@ def calc_compatible_matrix(source_num_ref,same_star,source_num,ewha):
     matrix_prob = np.ones((N_ref,N_ref))*0
     matrix_prob_all = np.ones((N_ref,N_ref))*0
     
-    for x in range(1,int(max(same_star)+1)):
+    for x in range(1,int(max(star_index)+1)):
         #Select group of the same star with the mask
-        mask = (same_star == x) 
+        mask = (star_index == x) 
         if(len(ewha[mask])>1):            
             #Select the sources where the star is repeated
             source_num_mask = source_num[mask]

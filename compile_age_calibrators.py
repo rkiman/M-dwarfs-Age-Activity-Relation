@@ -90,6 +90,7 @@ log_file.flush()
 #Combine results 
 age_calibrators = vstack([m_dwarfs_mg,m_dwarfs_wd])
 
+
 mask_ha = ~np.isnan(age_calibrators['ewha'])
 n_tot_cal = len(age_calibrators[mask_ha])
 log_file.write('Total number of age calibrators: {}\n'.format(n_tot_cal))
@@ -108,10 +109,10 @@ age_calibrators['lhalbol'] = lhalbol
 age_calibrators['lhalbol_error'] = lhalbol_error
 
 #Remove weird objects
-ra_weird = [279.9099730555555,279.90995833,279.909973,208.74074035,
-            23.808016111111108]
-dec_weird = [16.387083055555554,16.38711111,16.387083,5.21089823,
-             -7.2142930555555544]
+ra_weird = [279.9099730555555,279.90995833,279.909973,208.74074035]
+            #23.808016111111108,21.11529166666666]
+dec_weird = [16.387083055555554,16.38711111,16.387083,5.21089823]
+            # -7.2142930555555544,-33.91905555555555]
 mask_weird = []
 for ra_i,dec_i in zip(age_calibrators['ra'],age_calibrators['dec']):
     if(any(np.isclose(ra_i,ra_weird)) and any(np.isclose(dec_i,dec_weird))):

@@ -29,26 +29,20 @@ print('Adding corrected magnitudes')
 literature_search1 = src.add_corrected_magnitudes(literature_search1)
 
 #Find repeated stars
-same_star = src.find_repeated_stars(literature_search1['ra'],
+star_index = src.find_repeated_stars(literature_search1['ra'],
                                     literature_search1['dec'])
-#same_star == 0 means that it doesn't have a repeated star, so I replaced
-#it with a nan
-same_star[same_star==0] = np.nan
-literature_search1['same_star'] = same_star
+star_index[star_index==0] = np.nan
+literature_search1['star_index'] = star_index
 
 #Remove haew nans, zeros and higher mass dwarfs from the sample. 
 #We don't want them!
 mask_nan = ~np.isnan(np.array(literature_search1['ewha']))
 mask_zeros = np.array(literature_search1['ewha'])!=0
-
 g = literature_search1['g_corr']
 rp = literature_search1['rp_corr']
-
 #for stars that don't have spt, assing one photometric
 spt_column = src.get_spt(literature_search1['spt'], g-rp)
 literature_search1['spt'] = spt_column
-
-#mask_m_dwarf = g-rp > 0.8
 mask_m_dwarf = spt_column >= -1
 literature_search = literature_search1[mask_nan*mask_zeros*mask_m_dwarf]
 #Record number of M dwarfs in the sample that have haew
@@ -68,6 +62,51 @@ ls_compatible2 = src.select_compatible_measurements(literature_search,
                                                     max_order=2)
 ls_compatible = src.check_gaia_match(ls_compatible2)
 
+#Check number of repeated stars
+seen = []
+rep = 0
+rep2 = 0
+rep3 = 0
+rep4 = 0
+rep5 = 0
+rep6 = 0
+rep7 = 0
+rep8 = 0
+rep_more = 0
+for x in ls_compatible['star_index'][~np.isnan(ls_compatible['star_index'])]:
+    if(x not in seen):
+        seen.append(x)
+        mask_star_index = ls_compatible['star_index'] == x
+        if(len(ls_compatible[mask_star_index])>1):
+            rep += 1 
+            if(len(ls_compatible[mask_star_index])==2):
+                rep2+=1
+            elif(len(ls_compatible[mask_star_index])==3):
+                rep3+=1
+            elif(len(ls_compatible[mask_star_index])==4):
+                rep4+=1
+            elif(len(ls_compatible[mask_star_index])==5):
+                rep5+=1
+            elif(len(ls_compatible[mask_star_index])==6):
+                rep6+=1
+            elif(len(ls_compatible[mask_star_index])==7):
+                rep7+=1
+            elif(len(ls_compatible[mask_star_index])==8):
+                rep8+=1
+            elif(len(ls_compatible[mask_star_index])>8):
+                rep_more+=1
+                
+log_file.write('repeated_measurements:{}'.format(rep))
+log_file.write('repeated_measurements 2:{}'.format(rep2))
+log_file.write('repeated_measurements 3:{}'.format(rep3))
+log_file.write('repeated_measurements 4:{}'.format(rep4))
+log_file.write('repeated_measurements 5:{}'.format(rep5))
+log_file.write('repeated_measurements 6:{}'.format(rep6))
+log_file.write('repeated_measurements 7:{}'.format(rep7))
+log_file.write('repeated_measurements 8:{}'.format(rep8))
+log_file.write('repeated_measurements more:{}'.format(rep_more))
+
+#Save sample
 ls_compatible.write('Catalogs/literature_search_gaia_compatible.fits',
                     format='fits')
 #Record number of compatible stars

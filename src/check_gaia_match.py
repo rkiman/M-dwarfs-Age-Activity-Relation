@@ -6,29 +6,29 @@ import numpy as np
 def check_gaia_match(compatibles):
     print('Checking Gaia cross-match')
     #Load columns I need
-    same_star = compatibles['same_star']
+    star_index = compatibles['star_index']
     source_id = compatibles['source_id']
     #array to keep track of the index
-    extra_id = np.arange(len(same_star))
+    extra_id = np.arange(len(star_index))
     
     #Set parameters to save stars that have a bad crossmatch
     n_tot_diff_id = 0
     seen = []
     idx_to_remove = []
     
-    for x in same_star:
+    for x in star_index:
         #Identify repeated stars
-        mask_same_star = x == same_star
-        if(len(same_star[mask_same_star])>1):
+        mask_star_index = x == star_index
+        if(len(star_index[mask_star_index])>1):
             #Make sure I don't look at the same star more than once
             if(x not in seen):
                 seen.append(x)
-                same_star_source_id = source_id[mask_same_star]
+                star_index_source_id = source_id[mask_star_index]
                 #Check that all gaia ids are the same for all the stars
-                if(any(same_star_source_id!=same_star_source_id[0])):
+                if(any(star_index_source_id!=star_index_source_id[0])):
                     #If the gaia id is not the same for all the stars 
                     #identified as the same star, remove all of them
-                    for idx_i in extra_id[mask_same_star]:
+                    for idx_i in extra_id[mask_star_index]:
                         idx_to_remove.append(idx_i)
                     n_tot_diff_id+=1
                     
@@ -43,17 +43,17 @@ def check_gaia_match(compatibles):
     compatibles_good_match = compatibles[~mask_to_remove]
     
     #Repeate code wit the new table to make sure that no one is left
-    same_star_good_match = compatibles_good_match['same_star']
+    star_index_good_match = compatibles_good_match['star_index']
     source_id_good_match = compatibles_good_match['source_id']
     n_tot_diff_id = 0
     seen = []
-    for x in same_star_good_match:
-        mask_same_star = x == same_star_good_match
-        if(len(same_star_good_match[mask_same_star])>1):
+    for x in star_index_good_match:
+        mask_star_index = x == star_index_good_match
+        if(len(star_index_good_match[mask_star_index])>1):
             if(x not in seen):
                 seen.append(x)
-                same_star_source_id = source_id_good_match[mask_same_star]
-                if(any(same_star_source_id!=same_star_source_id[0])):
+                star_index_source_id = source_id_good_match[mask_star_index]
+                if(any(star_index_source_id!=star_index_source_id[0])):
                     n_tot_diff_id+=1
     assert n_tot_diff_id == 0
     

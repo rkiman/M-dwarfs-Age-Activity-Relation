@@ -203,7 +203,7 @@ def compile_m_moving_groups_sample(ls_compatible):
                mg_sample['lhalbol_error'], mg_sample['age']*1e6,
                (mg_sample['age_error']*1e6)/2,(mg_sample['age_error']*1e6)/2, 
                mg_sample['group_num'],mg_sample['group_name'], 
-               mg_sample['same_star'],
+               mg_sample['star_index'],
                mg_sample['source_num'], mg_sample['source_ref']]
 
     m_dwarfs_mg = organize_table_format(columns)

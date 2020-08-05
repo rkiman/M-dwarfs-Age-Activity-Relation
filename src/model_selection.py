@@ -13,7 +13,7 @@ def polynomial(x,*p):
     return np.polyval(p,x)
 
 def broken_power_law(x,*p):
-    a0,a1,a2,a3 = p
+    a0,a1,a2,a3,a4 = p
     if(isinstance(x, float)):
         if(x<a0):
             y_model = a1*x + a2

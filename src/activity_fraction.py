@@ -16,12 +16,14 @@ def get_mask_active_inactive(ewha,color):
     #p_inactive = np.array([-22.81938807,108.69676223,-191.72732865,
     #                       148.87638458,-43.17475922])
 
-    p_inactive = np.array([8.68040602,-29.00879431,32.46846377,-12.28874475])
+    #p_inactive = np.array([8.68040602,-29.00879431,32.46846377,-12.28874475])
+    
+    p_inactive = np.array([-2.38861673,2.83980992,3.63177622,-4.22292995])
     #Define a mask for active and inactive stars
     mask_inactive = abs(np.polyval(p_inactive,color)-ewha) < 0.75
     mask_active = ewha - np.polyval(p_inactive,color) >= 0.75
     
-    return mask_active,mask_inactive
+    return mask_active,mask_inactive,p_inactive
 
 def calc_activity_fraction(color,ewha,method_bin):
 
@@ -29,7 +31,7 @@ def calc_activity_fraction(color,ewha,method_bin):
     #define bins of colors 
     _,color_range = np.histogram(color,bins=method_bin)
     
-    mask_active,mask_inactive = get_mask_active_inactive(ewha,color)
+    mask_active,mask_inactive,p_inactive = get_mask_active_inactive(ewha,color)
     
     n_bin = len(color_range)-1
     

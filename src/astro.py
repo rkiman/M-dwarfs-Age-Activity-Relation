@@ -156,7 +156,7 @@ def organize_table_format(columns):
               'ewha_error', 'ewha_all', 
               'ewha_error_all', 'lhalbol', 'lhalbol_error', 'age', 
               'age_error_low', 'age_error_high', 'group_num', 'group_name',
-              'same_star',
+              'star_index',
               'source_num', 'source_ref']
     N = len(labels)
     
@@ -188,11 +188,11 @@ def calc_number_single_stars(catalog):
     '''
     We decided to use all the measurements we had for ha. But we need to 
     report how many single stars we have in each case. This is what this
-    function calculates using the same_star column. If two stars have the 
+    function calculates using the star_index column. If two stars have the 
     same number in that column then they are the same star.
     '''
-    same_star = catalog['same_star']
-    n_single = len(set(same_star))
+    star_index = catalog['star_index']
+    n_single = len(set(star_index))
     
     return n_single
 

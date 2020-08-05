@@ -21,10 +21,10 @@ def identify_accretors(ls_compatible):
     mask_not_acc = np.array(mask_not_acc)
         
     #If one of the measurements of the same star is accreating, all are. 
-    for i in range(1,int(max(ls_compatible['same_star']))+1):
-        mask_same_star = ls_compatible['same_star'] == i
-        if(any(mask_not_acc[mask_same_star]==False)):
-            mask_not_acc[mask_same_star]=False
+    for i in range(1,int(max(ls_compatible['star_index']))+1):
+        mask_star_index = ls_compatible['star_index'] == i
+        if(any(mask_not_acc[mask_star_index]==False)):
+            mask_not_acc[mask_star_index]=False
     
     log_file = open('log.txt','a')
     n_acc = len(ls_compatible[~mask_not_acc])

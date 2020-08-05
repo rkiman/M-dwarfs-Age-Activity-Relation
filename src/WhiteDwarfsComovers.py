@@ -84,36 +84,31 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
     #Define the new sample of m-dwarfs that have a white dwarf co-moving
     m_co_movers = m_dwarfs_pairs[mask_comovers*mask_nan_teff_logg]
     w_co_movers = w_dwarfs_pairs[mask_comovers*mask_nan_teff_logg]
-    
-    if(os.path.exists('Catalogs/'+file_name_binaries)):
-        w_co_movers1 = Table.read('Catalogs/'+file_name_binaries)
-        test_wd_table(w_co_movers,w_co_movers1)
-        w_co_movers = w_co_movers1
-    else:
-        #Calculate total age, cooling age, main sequence age, initial mass 
-        #and final mass for the white dwarfs
-        print('Calculating ages for white dwarfs')
-        result_w_ages = calc_ages_wdm_binaries(w_co_movers)
 
-        w_co_movers['ms_age_median'] = result_w_ages[:,0]
-        w_co_movers['ms_age_err_low'] = result_w_ages[:,1]
-        w_co_movers['ms_age_err_high'] = result_w_ages[:,2]
-        w_co_movers['cooling_age_median'] = result_w_ages[:,3]
-        w_co_movers['cooling_age_err_low'] = result_w_ages[:,4]
-        w_co_movers['cooling_age_err_high'] = result_w_ages[:,5]
-        w_co_movers['total_age_median'] = result_w_ages[:,6]
-        w_co_movers['total_age_err_low'] = result_w_ages[:,7]
-        w_co_movers['total_age_err_high'] = result_w_ages[:,8]
-        w_co_movers['initial_mass_median'] = result_w_ages[:,9]
-        w_co_movers['initial_mass_err_low'] = result_w_ages[:,10]
-        w_co_movers['initial_mass_err_high'] = result_w_ages[:,11]
-        w_co_movers['final_mass_median'] = result_w_ages[:,12]
-        w_co_movers['final_mass_err_low'] = result_w_ages[:,13]
-        w_co_movers['final_mass_err_high'] = result_w_ages[:,14]
-        w_co_movers['m_source_id'] = m_co_movers['source_id']
-    
-        w_co_movers.write('Catalogs/'+file_name_binaries, format = 'fits', 
-                          overwrite = True)
+    #Calculate total age, cooling age, main sequence age, initial mass 
+    #and final mass for the white dwarfs
+    print('Calculating ages for white dwarfs')
+    result_w_ages = calc_ages_wdm_binaries(w_co_movers)
+
+    w_co_movers['ms_age_median'] = result_w_ages['ms_age_median']
+    w_co_movers['ms_age_err_low'] = result_w_ages['ms_age_err_low']
+    w_co_movers['ms_age_err_high'] = result_w_ages['ms_age_err_high']
+    w_co_movers['cooling_age_median'] = result_w_ages['cooling_age_median']
+    w_co_movers['cooling_age_err_low'] = result_w_ages['cooling_age_err_low']
+    w_co_movers['cooling_age_err_high'] = result_w_ages['cooling_age_err_high']
+    w_co_movers['total_age_median'] = result_w_ages['total_age_median']
+    w_co_movers['total_age_err_low'] = result_w_ages['total_age_err_low']
+    w_co_movers['total_age_err_high'] = result_w_ages['total_age_err_high']
+    w_co_movers['initial_mass_median'] = result_w_ages['initial_mass_median']
+    w_co_movers['initial_mass_err_low'] = result_w_ages['initial_mass_err_low']
+    w_co_movers['initial_mass_err_high']=result_w_ages['initial_mass_err_high']
+    w_co_movers['final_mass_median'] = result_w_ages['final_mass_median'] 
+    w_co_movers['final_mass_err_low'] = result_w_ages['final_mass_err_low']
+    w_co_movers['final_mass_err_high'] = result_w_ages['final_mass_err_high']
+    w_co_movers['m_source_id'] = m_co_movers['source_id']
+
+    w_co_movers.write('Catalogs/'+file_name_binaries, format = 'fits', 
+                      overwrite = True)
         
     #Organize table format for future steps
     N_final = len(m_co_movers)
@@ -139,7 +134,7 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
                w_co_movers['total_age_err_low'], 
                w_co_movers['total_age_err_high'],
                np.zeros(N_final), np.array(['WD' for i in range(N_final)]),
-               m_co_movers['same_star'],
+               m_co_movers['star_index'],
                m_co_movers['source_num'], m_co_movers['source_ref']]
 
     m_co_movers_organized = organize_table_format(columns)

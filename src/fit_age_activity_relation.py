@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import scipy.optimize as op
 import emcee
-import corner
 import matplotlib.pyplot as plt
-from .auto_corr_time import calc_autocorrelation_time
+from .auto_corr_time import calc_auto_corr_time
 
 def west2008(x,a,b,n,l):
     lhalbol = np.ones(len(x))*np.nan
@@ -16,43 +14,48 @@ def west2008(x,a,b,n,l):
 
 def fit_halpha_bpl(params,log_age):
 
-    a0,a1,a2,a3 = params
+    log_t0,alpha1,beta1,alpha2,_ = params
     
     halpha_model = np.ones(len(log_age))*np.nan
-    mask = log_age < a0
-    halpha_model[mask] = a1*log_age[mask] + a2
-    halpha_model[~mask] = a3*log_age[~mask] + (a1-a3)*a0 + a2 
+    mask = log_age < log_t0
+    halpha_model[mask] = alpha1*(log_age[mask]-log_t0) + beta1
+    halpha_model[~mask] = alpha2*(log_age[~mask]-log_t0) + beta1
 
     return halpha_model
-        
+
+    
 def lnlike_age_bpl(params,log_age,log_lhalbol,log_lhalbol_error):
     
-    a0,a1,a2,a3 = params
+    log_t0,alpha1,beta1,alpha2,sigma_v = params
     
     model_halpha = fit_halpha_bpl(params,log_age)
-    sigma2 = log_lhalbol_error ** 2 
-    if(a0<0 or a0>10.3 or a3>100 or a3<-100 or a1>100 or a1 < -100):
+    sigmalpha2 = log_lhalbol_error ** 2 + sigma_v**2
+    if(log_t0<0 or log_t0>10.3 or alpha2>100 or alpha2<-100 or 
+       alpha1>100 or alpha1 < -100 
+       or sigma_v < 0 or sigma_v > 10):
         return -np.inf
     else:
-        return -0.5 * np.sum((log_lhalbol - model_halpha) ** 2 / sigma2)
+        return -0.5 * np.sum((log_lhalbol - model_halpha) ** 2 / sigmalpha2 
+                             + np.log(sigmalpha2))
 
 
 
 def fit_relation_bpl(mask,log_age,log_lhalbol,
-                     log_lhalbol_error,ini_params = np.array([9,-.1,1,-4]),
+                     log_lhalbol_error,ini_params = np.array([9,-.1,1,-4,1]),
                      sigma_random = 0.001,
-                     name='corner_fit.png',
                      name_file_auto_corr='auto_corr.png'):
-
+    max_n = 100000
+    n_indep_samples = 100
     #Optimize the parameters with scipy. Gets close to the result
-    nll = lambda *args: -lnlike_age_bpl(*args)
-    params = op.minimize(nll, ini_params, 
-                         args=(log_age[mask],log_lhalbol[mask],
-                               log_lhalbol_error[mask]))
+    #nll = lambda *args: -lnlike_age_bpl(*args)
+    #params = op.minimize(nll, ini_params, 
+    #                     args=(log_age[mask],log_lhalbol[mask],
+    #                           log_lhalbol_error[mask]))
     
     #New initial parameters are the results from the optimization
-    ini_params = params.x
-    n_params = len(params.x)
+    #ini_params = params.x
+    #print(ini_params)
+    n_params = len(ini_params)
     
     #Set dimension and walkder
     ndim, nwalkers = n_params, 200
@@ -65,44 +68,48 @@ def fit_relation_bpl(mask,log_age,log_lhalbol,
     sampler = emcee.EnsembleSampler(nwalkers,ndim,lnlike_age_bpl, 
                                     args=[log_age[mask],log_lhalbol[mask],
                                           log_lhalbol_error[mask]])
-    
-    print('Running burn in')
-    p,_,_ = sampler.run_mcmc(p0, 2000)
-    
-    #Take medians of the positions of each walkers to initialize again
-    chain = sampler.chain[:,:,:]
-    flat_samples = chain.reshape((-1,ndim))
-    p0_medians = np.array([np.median(flat_samples[:,x]) for x in range(n_params)])
-    p0_new = np.array([p0_medians+(np.random.rand(n_params)-0.5)*sigma_random
-                       for i in range(nwalkers)])
-    
+    #run burn in
+    p0_new,_,_ = sampler.run_mcmc(p0, 1000)
     sampler.reset()
     
-    print('Running mcmc to calculate auto-correlation time')
-    p,_,_ = sampler.run_mcmc(p0_new, 100000)
-    chain = sampler.chain
-    autoc_time = calc_autocorrelation_time(chain,name_file_auto_corr)
-    sampler.reset()
+    n_steps = int(max_n/100)
     
-    print('Running mcmc to calculate parameters')
-    p,_,_ = sampler.run_mcmc(p, 1000*autoc_time)
+    index = 0
+    autocorr = np.empty(max_n)
+    
+    # This will be useful to testing convergence
+    old_tau = np.inf
+    
+    # going to run the mcmc in groups of 100 steps
+    for x in range(n_steps):
+        p0_new,_,_ = sampler.run_mcmc(p0_new, 100)
+        chain = sampler.chain
+        # Compute the autocorrelation time so far
+        tau = calc_auto_corr_time(chain)
+        autocorr[index] = np.mean(tau)
+        index += 1
+    
+        # Check convergence
+        converged = np.all(tau * n_indep_samples < (x+1)*100)
+        converged &= np.all(np.abs(old_tau - tau) / tau < 0.01)
+        if converged:
+            break
+        old_tau = tau
+        
+    N = 100 * np.arange(1, index + 1)
+    plt.plot(N, N / 100.0, "--k", label=r"$\tau = N/100$")
+    plt.loglog(N, autocorr[:index], "-")
+    plt.xlabel("number of samples, $N$")
+    plt.ylabel(r"mean $\hat{\tau}$")
+    plt.legend(fontsize=14)
+    plt.grid()
+    plt.savefig(name_file_auto_corr)
+    plt.close()
+    
     chain = sampler.chain[:,:,:]
     flat_samples = chain.reshape((-1,ndim))
-    
-    plot_corner_plot(flat_samples,name)
     
     return chain,flat_samples
-
-def plot_corner_plot(flat_samples,name):
-    #labels = ['$a_0$','$a_1$','$a_2$','$a_3$','logf']
-    labels = ['$a_0$','$a_1$','$a_2$','$a_3$']
-
-    fig = corner.corner(flat_samples,labels=labels,quantiles=[.16,.50,.84],
-                        show_titles=True, title_kwargs={"fontsize": 12})
-    dropbox = '/Users/rociokiman/Dropbox (Personal)/Apps/Overleaf'
-    path = dropbox+'/Age-Activity Relation for M dwarfs/'+name
-    fig.savefig(path,dpi=300)
-    return 0
     
     
 def plot_walkers(chain_simple,labels=[]):
@@ -121,13 +128,14 @@ def plot_walkers(chain_simple,labels=[]):
     plt.show()
 
 
+
 '''
 def fit_halpha(params,color,log_age):
 
-    a0,a1,a2,a3,a4,a5 = params
+    log_t0,alpha1,alpha2,beta1,sigma_v,a5 = params
     
-    halpha_model = (a0 + a1*color + a2*color**2 +
-                    a3*log_age + a4*log_age**2 +
+    halpha_model = (log_t0 + alpha1*color + alpha2*color**2 +
+                    beta1*log_age + sigma_v*log_age**2 +
                     a5*log_age*color)
 
     return halpha_model
@@ -176,16 +184,16 @@ def fit_relation_complex_func(mask,color,log_age,log_lhalbol,
 
 def lnlike_age_bpl_var(params,log_age,log_lhalbol,log_lhalbol_error):
     
-    a0,a1,a2,a3,log_f = params
+    log_t0,alpha1,alpha2,beta1,log_f = params
     
-    model_halpha = fit_halpha_bpl(np.array([a0,a1,a2,a3]),log_age)
-    sigma2 = log_lhalbol_error ** 2 + model_halpha ** 2 * np.exp(2 * log_f)
+    model_halpha = fit_halpha_bpl(np.array([log_t0,alpha1,alpha2,beta1]),log_age)
+    sigmalpha2 = log_lhalbol_error ** 2 + model_halpha ** 2 * np.exp(2 * log_f)
     
-    if(a0<0 or a0>10.3 or a3>0 or a3<-100 or a1>100 or a1 < -100
-       or a2 < 0 or -10.0 > log_f or log_f > 1.0):
+    if(log_t0<0 or log_t0>10.3 or beta1>0 or beta1<-100 or alpha1>100 or alpha1 < -100
+       or alpha2 < 0 or -10.0 > log_f or log_f > 1.0):
         return -np.inf
     else:
-        return -0.5 * np.sum((log_lhalbol - model_halpha) ** 2 / sigma2 + np.log(sigma2))
+        return -0.5 * np.sum((log_lhalbol - model_halpha) ** 2 / sigmalpha2 + np.log(sigmalpha2))
 
     
 def fit_relation_bpl_var(mask,log_age,log_lhalbol,
