@@ -216,7 +216,20 @@ def make_table_wd_ages(binaries):
 
     file_sources.write('\\enddata \n')
     file_sources.write('\\end{deluxetable*}\n')
-
+    
+    data_path='/Users/rociokiman/Documents/M-dwarfs-Age-Activity-Relation/data'
+    if(os.path.exists(data_path + '/wd_ages.csv')):
+        os.remove(data_path + '/wd_ages.csv')
+    data_table = open(data_path + '/wd_ages.csv','x')
+    data_table.write('#Gaia id md\t Gaia id wd\t total age (yr)\t error low (yr)\t error high (yr)\n')
+    for x,y,z,z1,z2 in zip(binaries['m_source_id'],binaries['Source'],
+                           binaries['total_age_median'],
+                           binaries['total_age_err_low'],
+                           binaries['total_age_err_high']):
+        data_table.write(str(x)+'\t'+str(y)+'\t'+str(z)+'\t'+str(z1)
+                         +'\t'+str(z2)+'\n')
+    data_table.close()
+    
     return 0
 
 def make_table_summary_age_calibrators(age_calibrators):
@@ -260,8 +273,13 @@ def make_table_summary_age_calibrators(age_calibrators):
     other_catalogs = []
     catalogs_no_age = []
     
-    for x,y,z in zip(source_ref_table['source_num'],source_ref_table['cite'],
-                     source_ref_table['resolution']):
+    n_tot_all = np.array([int(data_compatible[:,1][data_compatible[:,0] == x]) 
+                          for x in source_ref_table['source_num']])
+    mask_sort_n = np.flip(np.argsort(n_tot_all))
+    
+    for x,y,z in zip(source_ref_table['source_num'][mask_sort_n],
+                     source_ref_table['cite'][mask_sort_n],
+                     source_ref_table['resolution'][mask_sort_n]):
         if(x==25):
             y='LG11'+'\\tablenotemark{d}'
         mask_source = age_calibrators['source_num'] == x
@@ -276,6 +294,8 @@ def make_table_summary_age_calibrators(age_calibrators):
         n_tot = int(data_compatible[:,1][mask_source_2])
         n_overlap = int(data_compatible[:,2][mask_source_2])
         n_comp = int(data_compatible[:,3][mask_source_2])
+        if(x==19):
+            n_comp=n_tot 
         if(~np.isnan(data_compatible[:,4][mask_source_2])):
             n_oc = int(data_compatible[:,4][mask_source_2])
         else:
@@ -408,8 +428,10 @@ def make_table_accretors(accretors):
     & \\colhead{$\\haew$} \
     & \\colhead{$\\Delta \\haew$\\tablenotemark{a}} \n}'
     
-    title = '\\tablecaption{Possible accretors found with the criterion from \
-    \\citet{White2003}. \\label{table:accretors}}\n'
+    title = '\\tablecaption{Short sample of $\haew$ outliers,\
+    possibly accreting according to the \
+    criterion from \\citet{White2003}. The full sample can be found online.\
+    \\label{table:accretors}}\n'
     
     file_sources.write('\\begin{deluxetable*}{lccc}[ht!]\n')
     file_sources.write('\\tablewidth{290pt}\n')

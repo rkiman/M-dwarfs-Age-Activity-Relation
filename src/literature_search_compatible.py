@@ -79,7 +79,6 @@ def find_repeated_stars(ra,dec):
     star_index = np.zeros(Ntot)
     c_all = SkyCoord(ra=ra*u.deg, dec=dec*u.deg)
     dummy = 1
-    print('Finding repeated stars:')
     for i in range(Ntot):
         if(i%10000==0):
             print('{} out of {}'.format(i,Ntot))

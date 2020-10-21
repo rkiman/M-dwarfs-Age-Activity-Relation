@@ -20,8 +20,10 @@ def calc_cross_validation(x,y,y_err,f,ini_params):
         y_pred = f(x_k,*popt)
 
         score += calc_cross_validation_score(y_pred,y_k,y_err_k)
-    return score
+    return score/N
         
 def calc_cross_validation_score(y_pred,y_k,y_err_k):
-    return np.sum((y_k-y_pred)**2 / y_err_k**2)
+    sigma_v = 0.1
+    y_err_2 = y_err_k**2 + sigma_v**2
+    return np.sum((y_k-y_pred)**2 / y_err_2)
     

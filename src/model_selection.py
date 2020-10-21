@@ -13,19 +13,19 @@ def polynomial(x,*p):
     return np.polyval(p,x)
 
 def broken_power_law(x,*p):
-    a0,a1,a2,a3,a4 = p
+    log_t0,alpha1,beta1,alpha2,_ = p
     if(isinstance(x, float)):
-        if(x<a0):
-            y_model = a1*x + a2
+        if(x<log_t0):
+            y_model = alpha1*(x-log_t0) + beta1
         else:
-            y_model = a3*x + (a1-a3)*a0 + a2 
+            y_model = alpha2*(x-log_t0) + beta1
     else:
         y_model = np.ones(len(x))*np.nan
-        mask = x < a0
-        y_model[mask] = a1*x[mask] + a2
-        y_model[~mask] = a3*x[~mask] + (a1-a3)*a0 + a2 
+        mask = x < log_t0
+        y_model[mask] = alpha1*(x[mask]-log_t0) + beta1
+        y_model[~mask] = alpha2*(x[~mask]-log_t0) + beta1
+    
     return y_model
-
 
 
 def select_model(lage,log_lhalbol,log_lhalbol_error,mask_good,
@@ -45,10 +45,11 @@ def select_model(lage,log_lhalbol,log_lhalbol_error,mask_good,
                                          log_lhalbol_error[mask_good],
                                          broken_power_law,bpl_ini_p)
 
-
+    
     ini_params = np.ones(6)
     popt,pcov=curve_fit(polynomial,lage[mask_good],log_lhalbol[mask_good],
-                        p0=ini_params,sigma=log_lhalbol_error[mask_good])
+                        p0=ini_params,
+                        sigma=log_lhalbol_error[mask_good])
     
     ini_params = np.ones(2)
     popt_linear,pcov=curve_fit(polynomial,lage[mask_good],

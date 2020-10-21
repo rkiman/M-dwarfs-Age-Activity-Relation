@@ -168,7 +168,7 @@ def organize_table_format(columns):
 
 
 def add_corrected_magnitudes(catalog):
-    deredden = Table.read('Catalogs/rocio_deredden.fits')
+    deredden = Table.read('Catalogs/deredden_gaia_mags.fits')
     N = len(catalog['source_id'])
     g_corr = np.ones(N)*np.nan
     rp_corr = np.ones(N)*np.nan

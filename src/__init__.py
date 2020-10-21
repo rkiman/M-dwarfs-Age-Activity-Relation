@@ -15,5 +15,6 @@ from .fit_age_activity_relation import *
 from .cross_validation import *
 from .accretors import *
 from .model_selection import *
-from .check_gaia_match import *
+from .check_gaia_match_func import *
 from .auto_corr_time import *
+from .compile_compatible_sample import *
