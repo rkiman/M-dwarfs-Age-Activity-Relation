@@ -91,23 +91,6 @@ log_file.flush()
 age_calibrators = vstack([m_dwarfs_mg,m_dwarfs_wd])
 
 
-mask_ha = ~np.isnan(age_calibrators['ewha'])
-n_tot_cal = len(age_calibrators[mask_ha])
-log_file.write('Total number of age calibrators: {}\n'.format(n_tot_cal))
-n_single = src.calc_number_single_stars(age_calibrators[mask_ha])
-text = 'Total number of single age calibrators: {}\n'
-log_file.write(text.format(n_single))
-log_file.flush()
-
-#Calculate LHalphaLbol
-print('Calculating Lhalbol')
-lhalbol,lhalbol_error = src.calc_lhalbol(age_calibrators['ewha'],
-                                         age_calibrators['ewha_error'],
-                                         age_calibrators['spt'])
-
-age_calibrators['lhalbol'] = lhalbol
-age_calibrators['lhalbol_error'] = lhalbol_error
-
 #Remove weird objects
 ra_weird = [279.9099730555555,279.90995833,279.909973,208.74074035]
             #23.808016111111108,21.11529166666666]
@@ -122,6 +105,14 @@ for ra_i,dec_i in zip(age_calibrators['ra'],age_calibrators['dec']):
 mask_weird = np.array(mask_weird)
 
 age_calibrators = age_calibrators[~mask_weird]
+
+mask_ha = ~np.isnan(age_calibrators['ewha'])
+n_tot_cal = len(age_calibrators[mask_ha])
+log_file.write('Total number of age calibrators: {}\n'.format(n_tot_cal))
+n_single = src.calc_number_single_stars(age_calibrators[mask_ha])
+text = 'Total number of single age calibrators: {}\n'
+log_file.write(text.format(n_single))
+log_file.flush()
 
 #Save sample
 print('Saving age calibrators sample')

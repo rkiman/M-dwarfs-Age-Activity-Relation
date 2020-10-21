@@ -40,11 +40,11 @@ mask_nan = ~np.isnan(np.array(literature_search1['ewha']))
 mask_zeros = np.array(literature_search1['ewha'])!=0
 g = literature_search1['g_corr']
 rp = literature_search1['rp_corr']
-#for stars that don't have spt, assing one photometric
-spt_column = src.get_spt(literature_search1['spt'], g-rp)
-literature_search1['spt'] = spt_column
-mask_m_dwarf = spt_column >= -1
+spt_column = src.get_spt(literature_search1['spt'], g-rp) #add photometric spt 
+literature_search1['spt'] = spt_column                      
+mask_m_dwarf = spt_column >= -1                           
 literature_search = literature_search1[mask_nan*mask_zeros*mask_m_dwarf]
+
 #Record number of M dwarfs in the sample that have haew
 n_ls = len(literature_search)
 text = 'Number of stars in the literature search sample: {}\n'
