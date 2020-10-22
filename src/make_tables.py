@@ -102,7 +102,7 @@ def make_table_for_wd(binaries):
 
     os.remove('data/wdm_co_movers_ages.csv')
     wdm_table = Table()
-    wdm_table['source_id_m'] = binaries['m_source_id']
+    wdm_table['source_id_m'] = binaries['source_id']
     wdm_table['source_id_wd'] = binaries['Source']
     wdm_table['total_age_median_yr'] = binaries['total_age_median']
     wdm_table['total_age_err_low_yr'] = binaries['total_age_err_low']
@@ -206,7 +206,7 @@ def make_table_wd_ages(binaries):
     file_sources.write('\\startdata \n')
     
     for i in rand_idx:
-        source_id_m = '$' + str(np.round(binaries['m_source_id'][i],2)) + '$'
+        source_id_m = '$' + str(np.round(binaries['source_id'][i],2)) + '$'
         source_id_wd = '$' + str(np.round(binaries['Source'][i],2)) + '$'
         age = str(np.round(binaries['total_age_median'][i]/1e9,2))
         err_low = str(np.round(binaries['total_age_err_low'][i]/1e9,2))
@@ -222,7 +222,7 @@ def make_table_wd_ages(binaries):
         os.remove(data_path + '/wd_ages.csv')
     data_table = open(data_path + '/wd_ages.csv','x')
     data_table.write('#Gaia id md\t Gaia id wd\t total age (yr)\t error low (yr)\t error high (yr)\n')
-    for x,y,z,z1,z2 in zip(binaries['m_source_id'],binaries['Source'],
+    for x,y,z,z1,z2 in zip(binaries['source_id'],binaries['Source'],
                            binaries['total_age_median'],
                            binaries['total_age_err_low'],
                            binaries['total_age_err_high']):

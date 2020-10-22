@@ -19,17 +19,17 @@ else:
 
 #Identify new members of moving groups
 file = 'data/new_members_data.csv'
-if(os.path.exists(file)):
+if(~os.path.exists(file)):
     src.find_new_members()
 
 #Make tables for the paper
 dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
 paper = 'Age-Activity Relation for M dwarfs/'
 
-binaries = Table.read('Catalogs/current/wdm_binaries.fits')
+binaries = Table.read('Catalogs/wdm_binaries.fits')
 src.make_table_wd_ages(binaries)
     
-age_calibrators = Table.read('Catalogs/age_calibrators_bayes.fits')
+age_calibrators = Table.read('Catalogs/age_calibrators.fits')
 src.make_table_summary_age_calibrators(age_calibrators)
     
 accretors = Table.read('Catalogs/literature_search_accretors.fits')

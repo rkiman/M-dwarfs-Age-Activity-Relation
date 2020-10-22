@@ -129,8 +129,8 @@ def find_new_members():
     dec_bf_mem = np.array(BF_mem['DEJ2000'])
     c_bf_mem = SkyCoord(ra=ra_bf_mem*u.deg, dec=dec_bf_mem*u.deg)
     
-    ra_all_mem = all_mem_banyan['ra']
-    dec_all_mem = all_mem_banyan['dec']
+    ra_all_mem = np.array([float(x.replace('...','-1')) for x in all_mem_banyan['col46']])
+    dec_all_mem = np.array([float(x.replace('...','-1')) for x in all_mem_banyan['col47']])
     c_all_mem = SkyCoord(ra=ra_all_mem*u.deg, dec=dec_all_mem*u.deg)
     
     ra_new_gf = np.array(new_gf['RAJ2000'])

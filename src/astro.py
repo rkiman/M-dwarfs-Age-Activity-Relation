@@ -196,6 +196,19 @@ def calc_number_single_stars(catalog):
     
     return n_single
 
+def find_idx_singles(catalog):
+    same_star = catalog['star_index']
+    seen = []
+    idx = []
+    for i,x in enumerate(same_star):
+        if(x=='nan'):
+            idx.append(i)
+        else:
+            if(x not in seen):
+                seen.append(x)
+                idx.append(i)
+    return np.array(idx)
+
 def color_to_spt(color):
     spt_model = np.linspace(-2,14,100) 
     g_rp_model = -0.0036*spt_model**2+0.11*spt_model+0.89
