@@ -31,10 +31,19 @@ def compile_compatible_sample():
     literature_search1 = add_corrected_magnitudes(literature_search1)
     
     #Find repeated stars
+    print('Finding repeated stars')
     star_index = find_repeated_stars(literature_search1['ra'],
                                      literature_search1['dec'])
     star_index[star_index==0] = np.nan
     literature_search1['star_index'] = star_index
+    
+    #Record total number of stars in the sample that have haew
+    n_ls = len(literature_search1)
+    text = 'Total number stars in the literature search sample: {}\n'
+    log_file.write(text.format(n_ls))
+    n_single = calc_number_single_stars(literature_search1)
+    text = 'Total number of single stars: {}\n'
+    log_file.write(text.format(n_single))
     
     #Remove haew nans, zeros and higher mass dwarfs from the sample. 
     #We don't want them!
@@ -49,10 +58,10 @@ def compile_compatible_sample():
     
     #Record number of M dwarfs in the sample that have haew
     n_ls = len(literature_search)
-    text = 'Number of stars in the literature search sample: {}\n'
+    text = 'Number M dwarfs with halpha in the literature search sample: {}\n'
     log_file.write(text.format(n_ls))
     n_single = calc_number_single_stars(literature_search)
-    text = 'Number of single stars in the literature search sample: {}\n'
+    text = 'Number single M dwarfs with halpha: {}\n'
     log_file.write(text.format(n_single))
     
     #Select compatible catalogs. ls_compatible is the new literature search 
@@ -72,6 +81,21 @@ def compile_compatible_sample():
     
     ls_compatible['lhalbol'] = lhalbol
     ls_compatible['lhalbol_error'] = lhalbol_error
+    
+    #Remove weird objects
+    ra_weird = [279.9099730555555,279.90995833,279.909973,208.74074035]
+                #23.808016111111108,21.11529166666666]
+    dec_weird = [16.387083055555554,16.38711111,16.387083,5.21089823]
+                # -7.2142930555555544,-33.91905555555555]
+    mask_weird = []
+    for rai,deci in zip(ls_compatible['ra'],ls_compatible['dec']):
+        if(any(np.isclose(rai,ra_weird)) and any(np.isclose(deci,dec_weird))):
+            mask_weird.append(True)
+        else:
+            mask_weird.append(False)
+    mask_weird = np.array(mask_weird)
+    
+    ls_compatible = ls_compatible[~mask_weird]
     
     #Check number of repeated stars
     seen = []

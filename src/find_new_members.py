@@ -6,10 +6,11 @@ import numpy as np
 import os
 from astropy.coordinates import SkyCoord
 import astropy.units as u
-import src
 from datetime import datetime
+from .astro import calc_number_single_stars
 
 def find_new_members():
+    
     #Open log file to record result numbers
     log_file = open('log.txt','a')
     log_file.write('\n')
@@ -21,7 +22,7 @@ def find_new_members():
     #Load table with results from banyan
     all_groups = Table.read('Catalogs/literature_search_all_groups.fits')
     mask_not_mem = (all_groups['group_name']!='nan') * (all_groups['good_mem']==0)
-    n_rejected=src.calc_number_single_stars(all_groups[mask_not_mem])
+    n_rejected=calc_number_single_stars(all_groups[mask_not_mem])
     text='Number of single stars that were rejected as members with banyan: {}\n'
     log_file.write(text.format(n_rejected))
     
@@ -110,7 +111,6 @@ def find_new_members():
     dec_mg = all_mem['dec'][new_mem]
     group_mg = all_mem['best_ya'][new_mem]
     source_mg = all_mem['source_ref'][new_mem]
-    star_index_mg = all_mem['star_index'][new_mem]
     source_id_mg = all_mem['source_id'][new_mem]
     spt_mg = all_mem['spt'][new_mem]
     
@@ -168,20 +168,19 @@ def find_new_members():
     text = 'Number of single members that were identified by gagne and roeser: {}\n'
     log_file.write(text.format(tot_match))
     
-    text = 'Number of single members that are new members and not in gagne: {}\n'
+    text = 'Number of single members that are posible new members: {}\n'
     log_file.write(text.format(tot_new_mem))
     
     log_file.close()
+    
+    
+def make_table_new_members(dropbox_path,paper):
     
     #Make table for paper
     source_ref_table = Table.read('data/source_ref.csv')
     new_mem_table = Table.read('data/new_members_data.csv',format='csv',
                                delimiter='\t')
-    groups_new = set(new_mem_table['group'])
-    n_groups = [len(new_mem_table[new_mem_table['group']==x]) for x in groups_new]
-    
-    dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
-    paper = 'Age-Activity Relation for M dwarfs/'
+
     if(os.path.exists(dropbox_path + paper + 'summary_new_mems.tex')):
         os.remove(dropbox_path + paper + 'summary_new_mems.tex')
     file_sources = open(dropbox_path + paper + 'summary_new_mems.tex','x')
@@ -222,11 +221,15 @@ def find_new_members():
     file_sources.write('\\end{deluxetable*}\n')
     file_sources.close()
     
+def make_table_summary_members(dropbox_path,paper):
     #Summary of members
     mg_confirmed = Table.read('Catalogs/literature_search_mg.fits')
     group_num = mg_confirmed['group_num']
     ewha = mg_confirmed['ewha']
-    star_index = mg_confirmed['star_index']
+    new_mem_table = Table.read('data/new_members_data.csv',format='csv',
+                               delimiter='\t')
+    groups_new = set(new_mem_table['group'])
+    n_groups = [len(new_mem_table[new_mem_table['group']==x]) for x in groups_new]
     
     mg_ref = Table.read('data/moving_groups_ref.csv')
     mg_ref = mg_ref[:-1]
@@ -255,7 +258,7 @@ def find_new_members():
     for name_group_i,num_group_i in zip(mg_ref['name'][idx_age],
                                         mg_ref['group_num'][idx_age]):
         mask = (group_num == num_group_i) * (~np.isnan(ewha))
-        n_group_tot = src.calc_number_single_stars(mg_confirmed[mask])
+        n_group_tot = calc_number_single_stars(mg_confirmed[mask])
         n_group_new = 0
         #print(name_group_i)
         if(name_group_i in groups_new):

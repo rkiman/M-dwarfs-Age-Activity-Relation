@@ -19,7 +19,8 @@ def calc_ages_wdm_binaries(wd_table):
                                      model_ifmr = model_ifmr,
                                      high_perc = 84, low_perc = 16,
                                      datatype='yr',
-                                     plot=True)
+                                     plot=True,
+                                     path='Catalogs/results_wd_ages/')
     
     return results
 

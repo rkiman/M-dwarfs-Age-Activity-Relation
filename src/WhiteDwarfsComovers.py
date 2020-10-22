@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from astropy.table import Table
+from astropy.table import Table, hstack
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 import numpy as np
 import os
+from scipy.interpolate import interp1d
 from .ages_whitedwarfs import calc_ages_wdm_binaries
 from .astro import organize_table_format
 
 def compile_m_wd_sample(m_dwarfs_not_mg,
-                        file_name_binaries='wdm_binaries_not_clean.fits'):
+                        file_name_binaries='wdm_binaries.fits'):
     #Cross-mach m-dwarf sample with white dwarf sample to find all the pairs in
     #a 10 arcmin radius
     print('Compiling sample of M dwarfs-white dwarfs binaries')
@@ -105,10 +106,15 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
     w_co_movers['final_mass_median'] = result_w_ages['final_mass_median'] 
     w_co_movers['final_mass_err_low'] = result_w_ages['final_mass_err_low']
     w_co_movers['final_mass_err_high'] = result_w_ages['final_mass_err_high']
-    w_co_movers['m_source_id'] = m_co_movers['source_id']
+    
+    m_w_co_movers = hstack([w_co_movers,m_co_movers])
+    
+    good_ages = idenfy_good_wd_ages(m_w_co_movers)
 
-    w_co_movers.write('Catalogs/'+file_name_binaries, format = 'fits', 
-                      overwrite = True)
+    m_w_co_movers['good_ages'] = good_ages
+    
+    m_w_co_movers.write('Catalogs/'+file_name_binaries, format = 'fits', 
+                        overwrite = True)
         
     #Organize table format for future steps
     N_final = len(m_co_movers)
@@ -139,7 +145,7 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
 
     m_co_movers_organized = organize_table_format(columns)
     
-    return m_co_movers_organized
+    return m_co_movers_organized[good_ages==1]
 
 def test_wd_table(table,table1):
     assert len(table) == len(table1)
@@ -273,3 +279,29 @@ def calc_pca(params_m_0, params_wd_0, pwd, f_pwd, limits):
         prob[mask] += 1
 
     return np.array(prob)/N #Return normalized probability
+
+def idenfy_good_wd_ages(m_w_co_movers):
+    bp_rp = m_w_co_movers['BPmag']-m_w_co_movers['RPmag']
+    g_abs = m_w_co_movers['Gmag'] - 5*(np.log10(1e3/m_w_co_movers['Plx'])-1)
+    
+    x=0.5
+    model_da = np.loadtxt('Models/cooling_models/Table_Mass_'+str(x)+'_DA')
+    g_model_da = model_da[:,34]
+    bp_rp_model_da = model_da[:,35]-model_da[:,36]
+    f_lim_up = interp1d(bp_rp_model_da,g_model_da)
+    
+    x=1.0
+    model_da = np.loadtxt('Models/cooling_models/Table_Mass_'+str(x)+'_DA')
+    g_model_da = model_da[:,34]
+    bp_rp_model_da = model_da[:,35]-model_da[:,36]
+    f_lim_down = interp1d(bp_rp_model_da,g_model_da)
+    
+    mask_discarded = np.logical_or(np.logical_or(
+            f_lim_up(bp_rp) > g_abs,bp_rp > 0.9),
+            f_lim_down(bp_rp) < g_abs)
+
+    good_age = np.ones(len(bp_rp))
+    good_age[mask_discarded] = 0
+    
+    return good_age
+    

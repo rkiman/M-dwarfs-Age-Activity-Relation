@@ -18,3 +18,5 @@ from .model_selection import *
 from .check_gaia_match_func import *
 from .auto_corr_time import *
 from .compile_compatible_sample import *
+from .compile_age_calibrators import *
+from .find_new_members import *

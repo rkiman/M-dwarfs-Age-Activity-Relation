@@ -8,7 +8,6 @@ sys.path.append(bpath)
 from banyan_sigma import banyan_sigma
 from scipy.io.idl import readsav
 from astropy.table import Table
-import os
 from .astro import organize_table_format,calc_number_single_stars
 
 def compile_m_moving_groups_sample(ls_compatible):
@@ -68,7 +67,7 @@ def compile_m_moving_groups_sample(ls_compatible):
 
     #Get Praesepe members which is not included in banyan yet.
     #Jonathan Gagne run Banyan on this sample for me and here are the results
-    path = 'Catalogs/rocio_praesepe_sample.sav'
+    path = 'Catalogs/Sources/praesepe_sample.sav'
     #extracting best young asociationg and probability of being member
     results_pra = readsav(path)
     ya_prob_pra = results_pra['out']['YA_PROB']
@@ -111,11 +110,8 @@ def compile_m_moving_groups_sample(ls_compatible):
     all_groups['good_mem'] = good_mem
     all_groups['arg'] = arg
     
-    path_mem = 'Catalogs/literature_search_all_groups.fits'
-    if(os.path.exists(path_mem)):
-        os.remove(path_mem)
     all_groups.write('Catalogs/literature_search_all_groups.fits',
-                     format='fits')
+                     format='fits',overwrite=True)
 
     #Register number of stars identified as members, not members and why
     mask_ha = ~np.isnan(all_groups['ewha'])
@@ -144,27 +140,6 @@ def compile_m_moving_groups_sample(ls_compatible):
                    part of argus:{}\n'.format(n_arg))
     log_file.write('Number of high likelihood members:{}\n'.format(n_good_mem))
     log_file.flush()
-    
-    #Mask for PRA members
-    #bf_pra = np.array([True if x in source_id_pra else False 
-    #                   for x in ls_compatible['source_id']])
-    
-    #Ajust prob for Praesepe members
-    #for x,y in zip(source_id_pra,ya_prob_pra[ya_prob_pra>0.9]):
-    #    mask = ls_compatible['source_id'][mask_run_banyan] == x
-    #    prob_ya[mask] = y
-    
-    #Making sure the true members in Praesepe have the right age
-    #for i in range(N):
-    #    if(remove(ls_compatible['group_name'][i])=='PRA' and mask_membership[i]):
-    #        mask_ref = mg_ref['name']=='PRA'
-    #        ls_compatible['group_name'][i] = 'PRA'
-    #        ls_compatible['group_num'][i] = mg_ref['group_num'][mask_ref][0]
-    #        ls_compatible['age'][i] = mg_ref['age'][mask_ref][0]
-    #        ls_compatible['age_error'][i] = mg_ref['age_error'][mask_ref][0]
-        
-    #Define mask for high likelihood members including praesepe        
-    #mask_membership = np.logical_or(highprob,bf_pra[mask_run_banyan])
     
     #Create table with the true members accorsing to Banyan
     mg_sample = ls_compatible[mask_run_banyan][mask_membership]
@@ -208,9 +183,9 @@ def compile_m_moving_groups_sample(ls_compatible):
 
     m_dwarfs_mg = organize_table_format(columns)
     
-    if(~os.path.exists('Catalogs/literature_search_mg.fits')):
-        print('Saving literature_search_mg.fits')
-        m_dwarfs_mg.write('Catalogs/literature_search_mg.fits',format='fits')
+    print('Saving literature_search_mg.fits')
+    m_dwarfs_mg.write('Catalogs/literature_search_mg.fits',format='fits',
+                      overwrite=True)
     
     return m_dwarfs_mg,m_dwarfs_not_mg
 
