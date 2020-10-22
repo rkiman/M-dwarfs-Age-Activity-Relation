@@ -285,13 +285,13 @@ def idenfy_good_wd_ages(m_w_co_movers):
     g_abs = m_w_co_movers['Gmag'] - 5*(np.log10(1e3/m_w_co_movers['Plx'])-1)
     
     x=0.5
-    model_da = np.loadtxt('Models/cooling_models/Table_Mass_'+str(x)+'_DA')
+    model_da = np.loadtxt('Catalogs/Models/cooling_models/Table_Mass_'+str(x)+'_DA')
     g_model_da = model_da[:,34]
     bp_rp_model_da = model_da[:,35]-model_da[:,36]
     f_lim_up = interp1d(bp_rp_model_da,g_model_da)
     
     x=1.0
-    model_da = np.loadtxt('Models/cooling_models/Table_Mass_'+str(x)+'_DA')
+    model_da = np.loadtxt('Catalogs/Models/cooling_models/Table_Mass_'+str(x)+'_DA')
     g_model_da = model_da[:,34]
     bp_rp_model_da = model_da[:,35]-model_da[:,36]
     f_lim_down = interp1d(bp_rp_model_da,g_model_da)

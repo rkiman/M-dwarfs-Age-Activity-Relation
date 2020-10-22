@@ -38,18 +38,8 @@ def compile_m_moving_groups_sample(ls_compatible):
     
     #Define mask to run banyan correctly
     mask_run_banyan = (~np.isnan(ra+dec+pmra+pmra_error+pmdec+pmdec_error+
-                                 parallax+parallax_error)
-                       * (parallax/parallax_error > 8))
-    
-    #Register how many stars with good kinematics we have. We included a cut
-    #to only have the number of single and compatible stars
-    log_file = open('log.txt','a')
-    mask_ha = ~np.isnan(ls_compatible['ewha'])
-    n_kin = calc_number_single_stars(ls_compatible[mask_run_banyan*mask_ha])
-    text = 'Number of single, compatible, not accretors with \
-    good kinematics: {}\n'
-    log_file.write(text.format(n_kin))
-    
+                                 parallax+parallax_error))
+
     #Run banyan
     print('Running Banyan')
     result = banyan_sigma(ra=ra[mask_run_banyan],dec=dec[mask_run_banyan], 
@@ -122,23 +112,18 @@ def compile_m_moving_groups_sample(ls_compatible):
     subsample = all_groups[(all_groups['uvw_sep_high']==1)*mask_ha]
     n_uvw_sep_high = calc_number_single_stars(subsample)
     subsample = all_groups[(all_groups['good_mem']==1)*mask_ha]
+    n_good_mem_tot = len(subsample)
     n_good_mem = calc_number_single_stars(subsample)
     subsample = all_groups[(all_groups['arg']==1)*mask_ha]
     n_arg = calc_number_single_stars(subsample)
-    
-    log_file.write('Number of single compatible stars not in moving group \
-                   because the prob of the \
-                   group was too low:{}\n'.format(n_mem_low))
-    log_file.write('Number of single compatible stars not in moving group \
-                   because they were \
-                   classified as field stars:{}\n'.format(n_field))
-    log_file.write('Number of single compatible stars not in moving group \
-                   because they had \
-                   a distance in UVW > 5km/s:{}\n'.format(n_uvw_sep_high))
-    log_file.write('Number of single compatible stars not in moving group \
-                   because they were \
-                   part of argus:{}\n'.format(n_arg))
-    log_file.write('Number of high likelihood members:{}\n'.format(n_good_mem))
+
+    log_file = open('log.txt','a')
+    log_file.write('Number of single compatible stars not in moving group because the prob of the group was too low:{}\n'.format(n_mem_low))
+    log_file.write('Number of single compatible stars not in moving group because they were classified as field stars:{}\n'.format(n_field))
+    log_file.write('Number of single compatible stars not in moving group because they had a distance in UVW > 5km/s:{}\n'.format(n_uvw_sep_high))
+    log_file.write('Number of single compatible stars not in moving group because they were part of argus:{}\n'.format(n_arg))
+    log_file.write('Number of high likelihood members:{}\n'.format(n_good_mem_tot))
+    log_file.write('Number of single high likelihood members:{}\n'.format(n_good_mem))
     log_file.flush()
     
     #Create table with the true members accorsing to Banyan

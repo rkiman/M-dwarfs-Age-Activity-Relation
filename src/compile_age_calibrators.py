@@ -8,6 +8,7 @@ from .accretors import identify_accretors
 from .astro import calc_number_single_stars
 from .moving_group_m import compile_m_moving_groups_sample
 from .WhiteDwarfsComovers import compile_m_wd_sample
+from .clear_gaia_kinematics import mask_gaia_cuts
 
 def compile_age_calibrators(ls_compatible):
     '''
@@ -47,9 +48,13 @@ def compile_age_calibrators(ls_compatible):
     n_not_acc = len(ls_c_not_acc1)
     log_file.write('Number of stars not accreating: {}\n'.format(n_not_acc))
     n_single = calc_number_single_stars(ls_c_not_acc1)
-    text = 'Number of single stars in the compatible sample: {}\n'
+    text = 'Number of single stars: {}\n'
     log_file.write(text.format(n_single))
     log_file.flush()
+    
+    #Select stars with good kinematics from gaia
+    print('Making Gaia cuts')
+    ls_c_not_acc = mask_gaia_cuts(ls_c_not_acc)
     
     #Identify M-dwarfs in moving groups
     print('Identifying moving group members')
@@ -59,7 +64,7 @@ def compile_age_calibrators(ls_compatible):
     mask_not_mg = ~np.isnan(m_dwarfs_not_mg['ewha'])
     n_singles = calc_number_single_stars(m_dwarfs_not_mg[mask_not_mg])
     text = 'Number of single stars not in moving groups: {}\n'
-    log_file.write(text.format(n_single))
+    log_file.write(text.format(n_singles))
     log_file.flush()
     
     #Remove stars close to PRA area because is very crouded and not good to find
@@ -70,14 +75,13 @@ def compile_age_calibrators(ls_compatible):
     
     mask_not_mg = ~np.isnan(m_dwarfs_not_mg['ewha'])
     n_singles = calc_number_single_stars(m_dwarfs_not_mg[mask_not_mg])
-    text = 'Number of single stars not in moving groups without PRA: {}\n'
+    text = 'Number of single compatible stars not in moving groups without PRA: {}\n'
     log_file.write(text.format(n_singles))
     log_file.flush()
     
-
     print('Saving literature_search_not_mg.fits')
     m_dwarfs_not_mg.write('Catalogs/literature_search_not_mg.fits',
-                          format='fits')
+                          format='fits',overwrite=True)
             
     #Identify M-dwarfs co-moving with a White dwarf
     m_dwarfs_wd = compile_m_wd_sample(m_dwarfs_not_mg)
