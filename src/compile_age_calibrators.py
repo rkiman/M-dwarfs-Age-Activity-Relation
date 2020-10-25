@@ -98,10 +98,4 @@ def compile_age_calibrators(ls_compatible):
     text = 'Total number of single age calibrators: {}\n'
     log_file.write(text.format(n_single))
     log_file.flush()
-    
-    #Save sample
-    print('Saving age calibrators sample')
-    age_calibrators.write('Catalogs/age_calibrators.fits', 
-                          overwrite=True)
-    print('Done sample of age calibrators')
 

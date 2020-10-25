@@ -17,6 +17,14 @@ if(os.path.exists(file)):
 else:
     age_calibrators = src.compile_age_calibrators(literature_search_gaia_compatible)
 
+#identify photometric binaries
+age_calibrators = src.add_binary_column(age_calibrators)
+
+#Save sample
+print('Saving age calibrators sample')
+age_calibrators.write('Catalogs/age_calibrators.fits', overwrite=True)
+print('Done sample of age calibrators')
+
 #Identify new members of moving groups
 file = 'data/new_members_data.csv'
 if(~os.path.exists(file)):

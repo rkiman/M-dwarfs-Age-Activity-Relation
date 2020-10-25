@@ -21,3 +21,4 @@ from .compile_compatible_sample import *
 from .compile_age_calibrators import *
 from .find_new_members import *
 from .clear_gaia_kinematics import *
+from .identify_binaries import *
