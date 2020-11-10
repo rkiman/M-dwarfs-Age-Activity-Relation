@@ -190,6 +190,9 @@ def calc_number_single_stars(catalog):
     report how many single stars we have in each case. This is what this
     function calculates using the star_index column. If two stars have the 
     same number in that column then they are the same star.
+    
+    Input: catalog, astropy table with 'star_index' column
+    Output: (str) total number of single stars
     '''
     star_index = catalog['star_index']
     n_single = len(set(star_index))
@@ -197,6 +200,12 @@ def calc_number_single_stars(catalog):
     return n_single
 
 def find_idx_singles(catalog):
+    '''
+    Finds the indeces of single stars
+    Input: (astropy table) catalog with 'star_index' column
+    Output: (array) indeces of single stars. For the repeated stars, 
+            it chooses the first one.
+    '''
     same_star = catalog['star_index']
     seen = []
     idx = []

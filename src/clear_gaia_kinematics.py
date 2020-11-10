@@ -48,7 +48,7 @@ def mask_gaia_cuts(sample):
     mask_ha = ~np.isnan(sample['ewha'])
     n_kin = calc_number_single_stars(sample[mask_gaia*mask_ha])
     n_kin_tot = len(sample[mask_gaia*mask_ha])
-    text = 'Number compatible, not accretors with good kinematics: {}\n'
+    text = 'Literature search with good kinematics: {}\n'
     log_file.write(text.format(n_kin_tot))
     text = 'Number of single stars: {}\n'
     log_file.write(text.format(n_kin))

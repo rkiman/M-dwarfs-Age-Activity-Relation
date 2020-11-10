@@ -8,7 +8,6 @@ from .accretors import identify_accretors
 from .astro import calc_number_single_stars
 from .moving_group_m import compile_m_moving_groups_sample
 from .WhiteDwarfsComovers import compile_m_wd_sample
-from .clear_gaia_kinematics import mask_gaia_cuts
 
 def compile_age_calibrators(ls_compatible):
     '''
@@ -52,9 +51,6 @@ def compile_age_calibrators(ls_compatible):
     log_file.write(text.format(n_single))
     log_file.flush()
     
-    #Select stars with good kinematics from gaia
-    print('Making Gaia cuts')
-    ls_c_not_acc = mask_gaia_cuts(ls_c_not_acc)
     
     #Identify M-dwarfs in moving groups
     print('Identifying moving group members')
@@ -98,4 +94,6 @@ def compile_age_calibrators(ls_compatible):
     text = 'Total number of single age calibrators: {}\n'
     log_file.write(text.format(n_single))
     log_file.flush()
+    
+    return age_calibrators
 

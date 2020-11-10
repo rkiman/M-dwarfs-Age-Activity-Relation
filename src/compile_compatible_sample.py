@@ -9,6 +9,7 @@ from .literature_search_compatible import find_repeated_stars
 from .literature_search_compatible import select_compatible_measurements
 from .check_gaia_match_func import check_gaia_match
 from datetime import datetime
+from .clear_gaia_kinematics import mask_gaia_cuts
 
 def compile_compatible_sample():
     '''
@@ -44,6 +45,10 @@ def compile_compatible_sample():
     n_single = calc_number_single_stars(literature_search1)
     text = 'Total number of single stars: {}\n'
     log_file.write(text.format(n_single))
+    
+    #Select stars with good kinematics from gaia
+    print('Making Gaia cuts')
+    literature_search1 = mask_gaia_cuts(literature_search1)
     
     #Remove haew nans, zeros and higher mass dwarfs from the sample. 
     #We don't want them!
@@ -124,15 +129,15 @@ def compile_compatible_sample():
                 elif(len(ls_compatible[mask_star_index])>8):
                     rep_more+=1
                     
-    log_file.write('repeated_measurements:{}'.format(rep))
-    log_file.write('repeated_measurements 2:{}'.format(rep2))
-    log_file.write('repeated_measurements 3:{}'.format(rep3))
-    log_file.write('repeated_measurements 4:{}'.format(rep4))
-    log_file.write('repeated_measurements 5:{}'.format(rep5))
-    log_file.write('repeated_measurements 6:{}'.format(rep6))
-    log_file.write('repeated_measurements 7:{}'.format(rep7))
-    log_file.write('repeated_measurements 8:{}'.format(rep8))
-    log_file.write('repeated_measurements more:{}'.format(rep_more))
+    log_file.write('repeated_measurements:{}\n'.format(rep))
+    log_file.write('repeated_measurements 2:{}\n'.format(rep2))
+    log_file.write('repeated_measurements 3:{}\n'.format(rep3))
+    log_file.write('repeated_measurements 4:{}\n'.format(rep4))
+    log_file.write('repeated_measurements 5:{}\n'.format(rep5))
+    log_file.write('repeated_measurements 6:{}\n'.format(rep6))
+    log_file.write('repeated_measurements 7:{}\n'.format(rep7))
+    log_file.write('repeated_measurements 8:{}\n'.format(rep8))
+    log_file.write('repeated_measurements more:{}\n'.format(rep_more))
     
     #Save sample
     ls_compatible.write('Catalogs/literature_search_gaia_compatible.fits',

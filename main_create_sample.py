@@ -27,7 +27,9 @@ print('Done sample of age calibrators')
 
 #Identify new members of moving groups
 file = 'data/new_members_data.csv'
-if(~os.path.exists(file)):
+if(os.path.exists(file)):
+    print('have the new members')
+else:
     src.find_new_members()
 
 #Make tables for the paper
