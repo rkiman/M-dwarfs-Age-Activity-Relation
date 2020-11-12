@@ -178,35 +178,52 @@ def make_table_new_members(dropbox_path,paper):
     
     #Make table for paper
     source_ref_table = Table.read('data/source_ref.csv')
-    new_mem_table = Table.read('data/new_members_data.csv',format='csv',
-                               delimiter='\t')
-
+    new_mem_table = Table.read('data/new_members_data_vetted.csv',format='csv')#,
+                               #delimiter='\t')
+    if('Name' in new_mem_table.columns):
+        name = new_mem_table['Name']
+    else:
+        c = SkyCoord(ra=new_mem_table['ra']*u.degree, 
+                 dec=new_mem_table['dec']*u.degree)
+        name = np.array([c_i.to_string('hmsdms') for c_i in c])
+        for i in range(len(name)):
+            name[i] = name[i].replace('h','')
+            name[i] = name[i].replace('m','')
+            name[i] = name[i].replace('s','')
+            name[i] = name[i].replace('d','')
+            name[i] = name[i].replace(' +','+')
+            name[i] = name[i].replace(' -','-')
+            name[i] = name[i].replace('.','')
+            name[i] = 'J'+name[i]
+        
+        new_mem_table['Name'] = name
+        new_mem_table.write('data/new_members_data.csv',format='csv',
+                        overwrite=True)
     if(os.path.exists(dropbox_path + paper + 'summary_new_mems.tex')):
         os.remove(dropbox_path + paper + 'summary_new_mems.tex')
     file_sources = open(dropbox_path + paper + 'summary_new_mems.tex','x')
     
     #Header
     header_text = '\\tablehead{\
-    \\colhead{\\textit{Gaia} source id} \
+    \\colhead{Name} \
     & \\colhead{SpT}\
     & \\colhead{group\\tablenotemark{a}}\
     & \\colhead{Reference} \n}'
     
-    title = '\\tablecaption{Sample of new members. We show only $10$ stars as an example \\label{table:newmem}}\n'
+    title = '\\tablecaption{New members of known young associations found\
+    in this study.\\label{table:newmem}}\n'
     
-    file_sources.write('\\begin{deluxetable*}{lccc}[ht!]\n')
+    file_sources.write('\\begin{deluxetable}{lccc}[ht!]\n')
     file_sources.write('\\tablewidth{290pt}\n')
     file_sources.write('\\tabletypesize{\scriptsize}\n')
     file_sources.write(title)
     file_sources.write(header_text)
     file_sources.write('\\startdata \n')
     
-    n_mem = 10
-    rand_idx = np.random.randint(0,len(new_mem_table),n_mem)
-    source_id = new_mem_table['source_id'][rand_idx]
-    spt = new_mem_table['spt'][rand_idx]
-    group = new_mem_table['group'][rand_idx]
-    ref = new_mem_table['reference'][rand_idx]
+    source_id = name
+    spt = new_mem_table['spt']
+    group = new_mem_table['group']
+    ref = new_mem_table['reference']
     reference_source = source_ref_table['source_ref']
     cite = [source_ref_table['cite'][reference_source==x][0] for x in ref]
     
@@ -218,7 +235,7 @@ def make_table_new_members(dropbox_path,paper):
     #for x,y in zip(groups_new,n_groups):
     #    note = note + '\t' + str(x) + ':' + str(y) +', '
     #file_sources.write(note+ '.}\n')
-    file_sources.write('\\end{deluxetable*}\n')
+    file_sources.write('\\end{deluxetable}\n')
     file_sources.close()
     
 def make_table_summary_members(dropbox_path,paper):
@@ -226,8 +243,15 @@ def make_table_summary_members(dropbox_path,paper):
     mg_confirmed = Table.read('Catalogs/literature_search_mg.fits')
     group_num = mg_confirmed['group_num']
     ewha = mg_confirmed['ewha']
-    new_mem_table = Table.read('data/new_members_data.csv',format='csv',
-                               delimiter='\t')
+    new_mem_table = Table.read('data/new_members_data_vetted.csv',format='csv')
+    not_new_mem_table = Table.read('data/not_a_new_member.csv',format='csv')
+    true_new_mem = []
+    for i in range(len(new_mem_table)):
+        if(new_mem_table['source_id'][i] in not_new_mem_table['not_member']):
+            continue
+        else:
+            true_new_mem.append(i)
+    new_mem_table = new_mem_table[true_new_mem]
     groups_new = set(new_mem_table['group'])
     n_groups = [len(new_mem_table[new_mem_table['group']==x]) for x in groups_new]
     

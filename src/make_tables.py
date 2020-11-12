@@ -4,6 +4,8 @@
 import os
 from astropy.table import Table
 import numpy as np
+from astropy.coordinates import SkyCoord
+from astropy import units as u
 from .accretors import calc_delta_ha_for_accretors
     
 
@@ -195,7 +197,7 @@ def make_table_wd_ages(binaries):
     rand_idx = np.random.randint(0,len(binaries),n_wd)
 
     #Header
-    file_sources.write('\\begin{deluxetable*}{ccc}[ht!]\n')
+    file_sources.write('\\begin{deluxetable}{ccc}[ht!]\n')
     file_sources.write('\\tablewidth{290pt}\n')
     file_sources.write('\\tabletypesize{\scriptsize}\n')
     file_sources.write('\\tablecaption{Ages for the white dwarfs co-moving with an M dwarf. \\label{table:wd_sample}}\n')
@@ -215,7 +217,7 @@ def make_table_wd_ages(binaries):
         file_sources.write(source_id_m+'&'+source_id_wd+'&'+tot+'\\\ \n') 
 
     file_sources.write('\\enddata \n')
-    file_sources.write('\\end{deluxetable*}\n')
+    file_sources.write('\\end{deluxetable}\n')
     
     data_path='/Users/rociokiman/Documents/M-dwarfs-Age-Activity-Relation/data'
     if(os.path.exists(data_path + '/wd_ages.csv')):
@@ -241,6 +243,7 @@ def make_table_summary_age_calibrators(age_calibrators):
     mask_ha = ~np.isnan(age_calibrators['ewha'])
     source_ref_table = Table.read('data/source_ref.csv')
     data_compatible = np.loadtxt('data/sources_summary.txt')
+    literature_search_all = Table.read('Catalogs/literature_search.fits')
 
     dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
     paper = 'Age-Activity Relation for M dwarfs/'
@@ -273,7 +276,7 @@ def make_table_summary_age_calibrators(age_calibrators):
     other_catalogs = []
     catalogs_no_age = []
     
-    n_tot_all = np.array([int(data_compatible[:,1][data_compatible[:,0] == x]) 
+    n_tot_all = np.array([int(len(literature_search_all[literature_search_all['source_num']==x])) 
                           for x in source_ref_table['source_num']])
     mask_sort_n = np.flip(np.argsort(n_tot_all))
     
@@ -291,7 +294,7 @@ def make_table_summary_age_calibrators(age_calibrators):
         n_wd_all = len(age_calibrators[mask_source*mask_wd])
         n_mg_all = len(age_calibrators[mask_source*mask_mg])
         
-        n_tot = int(data_compatible[:,1][mask_source_2])
+        n_tot = int(len(literature_search_all[literature_search_all['source_num']==x]))
         n_overlap = int(data_compatible[:,2][mask_source_2])
         n_comp = int(data_compatible[:,3][mask_source_2])
         if(x==19):
@@ -385,8 +388,21 @@ def make_table_accretors(accretors):
     n_acc = 10
     
     if(os.path.exists('data/possible_accretors.csv')):
-        os.remove('data/possible_accretors.csv')  
+        os.remove('data/possible_accretors.csv') 
+    c = SkyCoord(ra=accretors['ra']*u.degree, dec=accretors['dec']*u.degree)
+    name = np.array([c_i.to_string('hmsdms') for c_i in c])
+    for i in range(len(name)):
+        name[i] = name[i].replace('h','')
+        name[i] = name[i].replace('m','')
+        name[i] = name[i].replace('s','')
+        name[i] = name[i].replace('d','')
+        name[i] = name[i].replace(' +','+')
+        name[i] = name[i].replace(' -','-')
+        name[i] = name[i].replace('.','')
+        name[i] = 'J'+name[i]
+    
     table_acc = Table()
+    table_acc['name'] = name
     table_acc['source_id'] = accretors['source_id']
     table_acc['spt'] = accretors['spt']
     table_acc['ewha'] = accretors['ewha_all']
@@ -400,6 +416,15 @@ def make_table_accretors(accretors):
     mask_delta = delta_ha >= 0
     assert all([x in table_acc['star_index'][mask_delta] for x in table_acc['star_index'][~mask_delta]])
     table_acc = table_acc[mask_delta]
+    name_seen = []
+    keep = []
+    for i in range(len(table_acc['source_id'])):
+        if(table_acc['source_id'][i] in name_seen):
+            continue
+        else:
+            name_seen.append(table_acc['source_id'][i])
+            keep.append(i)
+    table_acc = table_acc[keep]
     table_acc.write('data/possible_accretors.csv',format='csv')
         
     delta_ha = np.ones(n_acc)*-1
@@ -407,7 +432,7 @@ def make_table_accretors(accretors):
     ewha_error = np.ones(n_acc)*np.nan
     while((any(delta_ha<0) or any(np.isnan(ewha_error)) or any(spt<0))):
         rand_idx = np.random.randint(0,len(accretors),n_acc)    
-        source_id = accretors['source_id'][rand_idx]
+        source_id = name[rand_idx]
         spt = accretors['spt'][rand_idx]
         ewha = accretors['ewha_all'][rand_idx]
         ewha_error = accretors['ewha_error_all'][rand_idx]
@@ -423,7 +448,7 @@ def make_table_accretors(accretors):
     
     #Header
     header_text = '\\tablehead{\
-    \\colhead{\\textit{Gaia} source id} \
+    \\colhead{Name} \
     & \\colhead{SpT} \
     & \\colhead{$\\haew$} \
     & \\colhead{$\\Delta \\haew$\\tablenotemark{a}} \n}'
@@ -433,7 +458,7 @@ def make_table_accretors(accretors):
     criterion from \\citet{White2003}. The full sample can be found online.\
     \\label{table:accretors}}\n'
     
-    file_sources.write('\\begin{deluxetable*}{lccc}[ht!]\n')
+    file_sources.write('\\begin{deluxetable}{lccc}[ht!]\n')
     file_sources.write('\\tablewidth{290pt}\n')
     file_sources.write('\\tabletypesize{\scriptsize}\n')
     file_sources.write(title)
@@ -449,5 +474,5 @@ def make_table_accretors(accretors):
                            +str(w) +'$ \\\ \n')
     file_sources.write('\\enddata \n')
     file_sources.write('\\tablenotetext{a}{Delta above the $\\haew$ limit.}\n')
-    file_sources.write('\\end{deluxetable*}\n')
+    file_sources.write('\\end{deluxetable}\n')
     

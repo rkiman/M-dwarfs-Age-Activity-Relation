@@ -112,6 +112,11 @@ def compile_m_wd_sample(m_dwarfs_not_mg,
     good_ages = idenfy_good_wd_ages(m_w_co_movers)
 
     m_w_co_movers['good_ages'] = good_ages
+
+    info='Number of m-dwarfs white dwarfs pairs with good ages: {}\n'
+    N = sum(good_ages)
+    log_file.write(info.format(N))
+    log_file.flush()
     
     m_w_co_movers.write('Catalogs/'+file_name_binaries, format = 'fits', 
                         overwrite = True)

@@ -58,7 +58,7 @@ def compile_compatible_sample():
     rp = literature_search1['rp_corr']
     spt_column = get_spt(literature_search1['spt'], g-rp)#add phot spt 
     literature_search1['spt'] = spt_column                      
-    mask_m_dwarf = spt_column >= -1                           
+    mask_m_dwarf = np.logical_or(spt_column >= -1, spt_column < 10)                          
     literature_search = literature_search1[mask_nan*mask_zeros*mask_m_dwarf]
     
     #Record number of M dwarfs in the sample that have haew
