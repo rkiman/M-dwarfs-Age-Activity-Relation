@@ -178,7 +178,7 @@ def make_table_new_members(dropbox_path,paper):
     
     #Make table for paper
     source_ref_table = Table.read('data/source_ref.csv')
-    new_mem_table = Table.read('data/new_members_data_vetted.csv',format='csv')#,
+    new_mem_table = Table.read('data/new_members_data.csv',format='csv')#,
                                #delimiter='\t')
     if('Name' in new_mem_table.columns):
         name = new_mem_table['Name']
@@ -243,8 +243,9 @@ def make_table_summary_members(dropbox_path,paper):
     mg_confirmed = Table.read('Catalogs/literature_search_mg.fits')
     group_num = mg_confirmed['group_num']
     ewha = mg_confirmed['ewha']
-    new_mem_table = Table.read('data/new_members_data_vetted.csv',format='csv')
-    not_new_mem_table = Table.read('data/not_a_new_member.csv',format='csv')
+    new_mem_table = Table.read('data/new_members_data.csv',format='csv')
+    not_new_mem_table = Table.read('data/extra/not_a_new_member.csv',
+                                   format='csv')
     true_new_mem = []
     for i in range(len(new_mem_table)):
         if(new_mem_table['source_id'][i] in not_new_mem_table['not_member']):

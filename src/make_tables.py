@@ -73,114 +73,6 @@ def make_summary_sources(source_num,Ncomp,compatible,total_comp,order,
     return 0
 
 
-def make_table_for_wd(binaries):
-    '''
-    Makes latex table with the summary of the white dwarfs values calculated
-    with wdwarfdate.
-    '''
-    os.remove('data/wdm_co_movers_full.csv')
-    wdm_table = Table()
-    wdm_table['source_id'] = binaries['Source']
-    wdm_table['TeffH'] = binaries['TeffH']
-    wdm_table['e_TeffH'] = binaries['e_TeffH']
-    wdm_table['loggH'] = binaries['loggH']
-    wdm_table['e_loggH'] = binaries['e_loggH']
-    wdm_table['ms_age_median_yr'] = binaries['ms_age_median']
-    wdm_table['ms_age_err_low_yr'] = binaries['ms_age_err_low']
-    wdm_table['ms_age_err_high_yr'] = binaries['ms_age_err_high']
-    wdm_table['cooling_age_median_yr'] = binaries['cooling_age_median']
-    wdm_table['cooling_age_err_low_yr'] = binaries['cooling_age_err_low']
-    wdm_table['cooling_age_err_high_yr'] = binaries['cooling_age_err_high']
-    wdm_table['total_age_median_yr'] = binaries['total_age_median']
-    wdm_table['total_age_err_low_yr'] = binaries['total_age_err_low']
-    wdm_table['total_age_err_high_yr'] = binaries['total_age_err_high']
-    wdm_table['initial_mass_median'] = binaries['initial_mass_median']
-    wdm_table['initial_mass_err_low'] = binaries['initial_mass_err_low']
-    wdm_table['initial_mass_err_high'] = binaries['initial_mass_err_high']
-    wdm_table['final_mass_median'] = binaries['final_mass_median']
-    wdm_table['final_mass_err_low'] = binaries['final_mass_err_low']
-    wdm_table['final_mass_err_high'] = binaries['final_mass_err_high']
-    wdm_table.write('data/wdm_co_movers_full.csv',format='csv')
-
-    os.remove('data/wdm_co_movers_ages.csv')
-    wdm_table = Table()
-    wdm_table['source_id_m'] = binaries['source_id']
-    wdm_table['source_id_wd'] = binaries['Source']
-    wdm_table['total_age_median_yr'] = binaries['total_age_median']
-    wdm_table['total_age_err_low_yr'] = binaries['total_age_err_low']
-    wdm_table['total_age_err_high_yr'] = binaries['total_age_err_high']
-    wdm_table.write('data/wdm_co_movers_ages.csv',format='csv')
-    
-    dropbox_path = '/Users/rociokiman/Dropbox/Apps/Overleaf/'
-    paper = 'wdwarfdate/'
-    os.remove(dropbox_path + paper + 'wd_summary.tex')
-    file_sources = open(dropbox_path + paper + 'wd_summary.tex','x')
-    
-    n_wd = 10
-    rand_idx = np.random.randint(0,len(binaries),n_wd)
-
-    #Header
-    file_sources.write('\\begin{deluxetable*}{cccccccc}[ht!]\n')
-    file_sources.write('\\tablewidth{290pt}\n')
-    file_sources.write('\\tabletypesize{\scriptsize}\n')
-    file_sources.write('\\tablecaption{WD sample. \\label{table:wd_sample}}\n')
-    file_sources.write('\\tablehead{\
-                        \\colhead{\\textit{Gaia} source id}\
-                        &\\colhead{$T_{\\rm eff}$}\
-                        & \\colhead{$\log (g)$}\
-                        & \\colhead{$t_{\\rm ms}$(Gyr)}\
-                        & \\colhead{$t_{\\rm cool}$(Gyr)}\
-                        & \\colhead{$t_{\\rm tot}$(Gyr)}\
-                        & \\colhead{$m_{\\rm i}$(M\\textsubscript{\(\odot\)})}\
-                        & \\colhead{$m_{\\rm f}$(M\\textsubscript{\(\odot\)})}\
-                        \n}')
-    file_sources.write('\\startdata \n')
-    
-    for i in rand_idx:
-        #source id
-        source_id_i = str(binaries['Source'][i])
-        #teff
-        val = str(np.round(binaries['TeffH'][i],2))
-        err = str(np.round(binaries['e_TeffH'][i],2))
-        teff = '$' + val + '\pm ' + err + '$'
-        #logg
-        val = str(np.round(binaries['loggH'][i],2))
-        err = str(np.round(binaries['e_loggH'][i],2))
-        logg = '$' + val + '\pm ' + err + '$'
-        #ms age
-        val = str(np.round(binaries['ms_age_median'][i]/1e9,2))
-        err_low = str(np.round(binaries['ms_age_err_low'][i]/1e9,2))
-        err_high = str(np.round(binaries['ms_age_err_high'][i]/1e9,2))
-        ms = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
-        #cool age
-        val = str(np.round(binaries['cooling_age_median'][i]/1e9,2))
-        err_low = str(np.round(binaries['cooling_age_err_low'][i]/1e9,2))
-        err_high = str(np.round(binaries['cooling_age_err_high'][i]/1e9,2))
-        cool = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
-        #tot age
-        val = str(np.round(binaries['total_age_median'][i]/1e9,2))
-        err_low = str(np.round(binaries['total_age_err_low'][i]/1e9,2))
-        err_high = str(np.round(binaries['total_age_err_high'][i]/1e9,2))
-        tot = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
-        #initial mass
-        val = str(np.round(binaries['initial_mass_median'][i],2))
-        err_low = str(np.round(binaries['initial_mass_err_low'][i],2))
-        err_high = str(np.round(binaries['initial_mass_err_high'][i],2))
-        mini = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
-        #final mass
-        val = str(np.round(binaries['final_mass_median'][i],2))
-        err_low = str(np.round(binaries['final_mass_err_low'][i],2))
-        err_high = str(np.round(binaries['final_mass_err_high'][i],2))
-        mfin = '$' + val + '_{-' + err_low + '}^{+' + err_high + '}$'
-        #complete line
-        file_sources.write(source_id_i +'&'+ teff+'&'+logg+'&'+ms+'&'+cool+'&'
-                           +tot+'&'+mini+'&'+mfin+'\\\ \n') 
-
-    file_sources.write('\\enddata \n')
-    file_sources.write('\\end{deluxetable*}\n')
-
-    return 0
-
 def make_table_wd_ages(binaries):
     '''
     Makes a table summary of white dwarfs with only the total age calculated
@@ -192,9 +84,6 @@ def make_table_wd_ages(binaries):
     if(os.path.exists(dropbox_path + paper + 'wd_ages.tex')):
         os.remove(dropbox_path + paper + 'wd_ages.tex')
     file_sources = open(dropbox_path + paper + 'wd_ages.tex','x')
-    
-    n_wd = 10
-    rand_idx = np.random.randint(0,len(binaries),n_wd)
 
     #Header
     file_sources.write('\\begin{deluxetable}{ccc}[ht!]\n')
@@ -207,7 +96,9 @@ def make_table_wd_ages(binaries):
                         \\\ M dwarf & White dwarf & (Gyr) \n}')
     file_sources.write('\\startdata \n')
     
-    for i in rand_idx:
+    good_age_idx = np.arange(len(binaries))[binaries['good_ages']==1]
+    
+    for i in good_age_idx:
         source_id_m = '$' + str(np.round(binaries['source_id'][i],2)) + '$'
         source_id_wd = '$' + str(np.round(binaries['Source'][i],2)) + '$'
         age = str(np.round(binaries['total_age_median'][i]/1e9,2))
