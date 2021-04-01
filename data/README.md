@@ -2,7 +2,7 @@
 
 Data used to compile the sample of age calibrators. 
 
-moving_group_ref.csv : reference file to the young associations in BANYAN ? (Gagn/'e et al. 2018).
+moving_group_ref.csv : reference file to the young associations in BANYAN \Sigma (Gagné et al. 2018).
 
 ReadMe_wd: extra file to load the table of white dwarfs from Gentile Fusillo+, 2019 from vizier. 
 
