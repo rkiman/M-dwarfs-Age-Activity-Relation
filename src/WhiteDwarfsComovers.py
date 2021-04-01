@@ -173,7 +173,7 @@ def cross_match_to_white_dwarfs(m_dwarfs):
         dec_wd = w_dwarfs['DE_ICRS']
     else:
         url="ftp://cdsarc.u-strasbg.fr/pub/cats/J/MNRAS/482/4570/gaia2wd.dat.gz" 
-        w_dwarfs = Table.read(url, readme="data/ReadMe", format="ascii.cds")
+        w_dwarfs = Table.read(url, readme="data/ReadMe_wd", format="ascii.cds")
         ra_wd = w_dwarfs['RAdeg']
         dec_wd = w_dwarfs['DEdeg']
 
@@ -251,7 +251,7 @@ def calc_pca(params_m_0, params_wd_0, pwd, f_pwd, limits):
         w_dwarfs = Table.read('Catalogs/wd_sources/gaiawd.fit')
     else:
         url="ftp://cdsarc.u-strasbg.fr/pub/cats/J/MNRAS/482/4570/gaia2wd.dat.gz" 
-        w_dwarfs = Table.read(url, readme="data/ReadMe", format="ascii.cds")
+        w_dwarfs = Table.read(url, readme="data/ReadMe_wd", format="ascii.cds")
     
     Ntot_wd = len(pwd)
     N = 1000 #Number of repetition for the probability
