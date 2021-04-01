@@ -6,7 +6,7 @@ import numpy as np
 import pkg_resources
 from scipy.io.idl import readsav
 
-'''
+
 def text_confirm_active_m_dwarfs():
     path = 'Catalogs/Sources/Douglas2014_praesepe_gaia.csv'
     filepath = pkg_resources.resource_filename(__name__, path)
@@ -22,4 +22,4 @@ def text_confirm_active_m_dwarfs():
     
     assert(all(results['input']['ra'][i] == douglas2014['ra'][i]))
     assert(all(results['input']['dec'][i] == douglas2014['dec'][i]))
-'''
+
