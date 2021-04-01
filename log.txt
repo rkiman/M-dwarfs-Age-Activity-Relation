@@ -1,0 +1,55 @@
+
+Log's date and time: 09/11/2020 15:14:12
+Literature search with good kinematics: 27201
+Number of single stars: 25535
+Catalogs that have overlap but where found not compatible: [ 1 25  7 14 20 28 42 46 48 32 47 21 52]
+Number of stars removed because they where    repeated measurements: 339
+Number of single stars removed because they had a bad cross-match    with gaia:6
+Total number stars in the literature search sample: 86918
+Total number of single stars: 80903
+Number M dwarfs with halpha in the literature search sample: 25720
+Number single M dwarfs with halpha: 24330
+repeated_measurements:726
+repeated_measurements 2:503
+repeated_measurements 3:158
+repeated_measurements 4:45
+repeated_measurements 5:14
+repeated_measurements 6:6
+repeated_measurements 7:0
+repeated_measurements 8:0
+repeated_measurements more:0
+Number of stars in the compatible sample: 25218
+Number of single stars in the compatible sample: 24202
+
+Log's date and time: 09/11/2020 19:54:30
+Number of possible accretors: 63
+Number of single possible accretors: 45
+Number of stars not accreating: 25168
+Number of single stars: 24166
+Number of single compatible stars not in moving group because the prob of the group was too low:108
+Number of single compatible stars not in moving group because they were classified as field stars:23118
+Number of single compatible stars not in moving group because they had a distance in UVW > 5km/s:25
+Number of single compatible stars not in moving group because they were part of argus:23
+Number of high likelihood members:1121
+Number of single high likelihood members:892
+Number of single stars not in moving groups: 23274
+Number of single compatible stars not in moving groups without PRA: 23252
+Number of m-dwarfs white dwarfs pairs: 61
+Number of m-dwarfs with prob of chance alignment > 0.01: 22
+Number of m-dwarfs white dwarfs pairs with prob of chance alignment <= 0.01: 39
+Number of m-dwarfs white dwarfs pairs I will calculate age for: 30
+Total number of age calibrators: 1142
+Total number of single age calibrators: 913
+
+
+Log's date and time: 09/11/2020 23:43:41
+Number of single stars that were rejected as members with banyan: 188
+Number of single members that changed their group with banyan: 17
+Number of single members that did not change their group: 708
+Number of single members that are "new" members: 167
+Number of single members that were identified by gagne and roeser: 126
+Number of single members that are posible new members: 58
+
+Log's date and time: 25/11/2020 13:57:15
+Number of photometric binaries: 9
+Number of single stars: 5
