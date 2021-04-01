@@ -1,7 +1,7 @@
 name,age,age_error,ref_age,group_num,Comment,
 WD,,,,0,,
 ABDMG,149,51,\citet{Bell2015},1,,
-ARG,40,11,\citet{?},2,,
+ARG,45,5,\citet{Zuckerman2018},2,,
 BPMG,24,3,\citet{Bell2015},3,,
 CAR,45,11,\citet{Bell2015},4,,
 CARN,200,50,\citet{Zuckerman2006},5,Need reference for the error,
