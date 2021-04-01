@@ -24,7 +24,7 @@ Lawson 2002,21,\citet{Lawson2002},0,
 Lepine 2003,22,\citet{Lepine2003},Multiple,2003AJ....125.1598L
 Lepine 2009,23,\citet{Lepine2009},Multiple,2009AJ....137.4109L
 Lepine 2013,24,\citet{Lepine2013},"2000,4000",2013AJ....145..102L
-LG11,25,\citet{lg11},1000,
+LG11,25,"\citet{Lepine2013,Gaidos2014}",1000,
 Lodieu 2005,26,\citet{Lodieu2005},600,2005A&A...440.1061L
 Lyo 2004,27,\citet{Lyo2004},0,
 Malo 2014,28,\citet{Malo2014},1750,
@@ -42,7 +42,7 @@ Reiners 2007,39,\citet{Reiners2007},31000,2007ApJ...656.1121R
 Reiners 2008,40,\citet{Reiners2008},31000,2008ApJ...684.1390R
 Reiners 2010,41,\citet{Reiners2010},31000,2010ApJ...710..924R
 Riaz 2006,42,\citet{Riaz2006},1750,2006AJ....132..866R
-Riedel 2014,43,\citet{Riedel2014},0,
+Riedel 2014,43,\citet{Riedel2014},Multiple,
 Rodriguez 2014,44,\citet{Rodriguez2014},"3000, 7000",
 Schneider 2019,45,\citet{Schneider2019},32000,2019AJ....157..234S
 Shkolnik 2009,46,\citet{Shkolnik2009},60000,2009ApJ...699..649S
@@ -50,7 +50,7 @@ Shkolnik 2011,47,\citet{Shkolnik2011},"4100, 35000, moderate?",
 Shkolnik 2017,48,\citet{Shkolnik2017},"35000, 58000",
 Slesnick 2006,49,\citet{Slesnick2006},1250,2006AJ....131.3016S
 Slesnick 2008,50,\citet{Slesnick2008},1250,2008ApJ...688..377S
-Song 2003,51,\citet{Song2003},0,
+Song 2003,51,\citet{Song2003},24000,
 Song 2004,52,\citet{Song2004},0,
 Stauffer 1997,53,\citet{Stauffer1997},44000,1997ApJ...475..604S
 Terrien 2015,54,\citet{Terrien2015},2000,2015ApJS..220...16T
