@@ -3,5 +3,5 @@ numpy
 astropy
 scipy
 daft
-git+git://github.com/rkiman/wdwarfdate@master#egg=wdwarfdate
-git+git://github.com/rkiman/banyan_sigma#egg=banyan_sigma
+git+git://github.com/rkiman/wdwarfdate@master
+git+git://github.com/rkiman/banyan_sigma@master
